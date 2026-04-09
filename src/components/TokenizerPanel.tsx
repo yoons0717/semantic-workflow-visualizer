@@ -4,19 +4,26 @@ import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { tokenizeText } from "@/lib/tokenizer";
 
-const TOKEN_COLORS = [
-  { bg: "var(--tok-1)", text: "var(--tok-t1)" },
-  { bg: "var(--tok-2)", text: "var(--tok-t2)" },
-  { bg: "var(--tok-3)", text: "var(--tok-t3)" },
-  { bg: "var(--tok-4)", text: "var(--tok-t4)" },
-  { bg: "var(--tok-5)", text: "var(--tok-t5)" },
+const ANALYZABLE_STAGES = ["idle", "done", "error"] as const;
+
+const TOKEN_CHIP_CLASSES = [
+  "tok-chip-0",
+  "tok-chip-1",
+  "tok-chip-2",
+  "tok-chip-3",
+  "tok-chip-4",
 ];
 
 export function TokenizerPanel() {
   const input = useWorkflowStore((s) => s.input);
   const tokens = useWorkflowStore((s) => s.tokens);
+  const stage = useWorkflowStore((s) => s.stage);
   const setInput = useWorkflowStore((s) => s.setInput);
   const setTokens = useWorkflowStore((s) => s.setTokens);
+  const setStage = useWorkflowStore((s) => s.setStage);
+  const reset = useWorkflowStore((s) => s.reset);
+
+  const canAnalyze = input.trim().length > 0 && (ANALYZABLE_STAGES as readonly string[]).includes(stage);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -58,28 +65,41 @@ export function TokenizerPanel() {
         <StatItem label="Ratio" value={ratio} />
       </div>
 
+      {/* Action buttons */}
+      <div className="flex gap-2 shrink-0">
+        <button
+          onClick={() => setStage("tokenizing")}
+          disabled={!canAnalyze}
+          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed ${
+            canAnalyze
+              ? "bg-[#0d2a1e] text-accent border-[#1a4a38]"
+              : "bg-transparent text-text-dim border-border-dim"
+          }`}
+        >
+          ▶ 분석 시작
+        </button>
+        <button
+          onClick={() => reset()}
+          className="font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border border-border-dim text-text-dim transition-all duration-150 hover:text-swv-red hover:border-swv-red"
+        >
+          초기화
+        </button>
+      </div>
+
       {/* Token grid */}
       <div className="flex flex-wrap gap-[4px] overflow-y-auto flex-1 content-start">
         {tokens.map((token, i) => {
-          const color = TOKEN_COLORS[token.colorIndex];
           // 공백 전용 토큰은 "·"로 표시, 그 외는 원문 유지
           const display = token.text.trim() === "" ? "·" : token.text;
           return (
             <div
               key={`${i}-${token.id}`}
-              className="flex flex-col items-center gap-[1px] min-w-[28px] px-[6px] py-[3px] rounded-[2px]"
-              style={{ background: color.bg }}
+              className={`flex flex-col items-center gap-[1px] min-w-[28px] px-[6px] py-[3px] rounded-[2px] ${TOKEN_CHIP_CLASSES[token.colorIndex]}`}
             >
-              <span
-                className="font-mono text-[11px] font-medium leading-none"
-                style={{ color: color.text }}
-              >
+              <span className="font-mono text-[11px] font-medium leading-none">
                 {display}
               </span>
-              <span
-                className="font-mono text-[8px] leading-none opacity-60"
-                style={{ color: color.text }}
-              >
+              <span className="font-mono text-[8px] leading-none opacity-60">
                 {token.id}
               </span>
             </div>

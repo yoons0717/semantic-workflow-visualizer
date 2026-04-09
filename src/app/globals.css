@@ -76,6 +76,13 @@ html, body {
 @keyframes token-appear {
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* token chip color utilities (5-cycle) */
+@utility tok-chip-0 { background: var(--tok-1); color: var(--tok-t1); }
+@utility tok-chip-1 { background: var(--tok-2); color: var(--tok-t2); }
+@utility tok-chip-2 { background: var(--tok-3); color: var(--tok-t3); }
+@utility tok-chip-3 { background: var(--tok-4); color: var(--tok-t4); }
+@utility tok-chip-4 { background: var(--tok-5); color: var(--tok-t5); }
 @keyframes card-appear {
   to { opacity: 1; transform: translateX(0); }
 }
