@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   return new Response(textResponse.body, {
     headers: {
       ...Object.fromEntries(textResponse.headers.entries()),
-      'x-prompt-log': JSON.stringify({ system: SYSTEM_PROMPT }),
+      'x-prompt-log': encodeURIComponent(JSON.stringify({ system: SYSTEM_PROMPT })),
     },
   });
 }

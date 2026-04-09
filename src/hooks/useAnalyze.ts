@@ -22,7 +22,7 @@ export function useAnalyze() {
         });
 
         const promptLog = res.headers.get("x-prompt-log");
-        if (promptLog) setPromptLog(promptLog);
+        if (promptLog) setPromptLog(decodeURIComponent(promptLog));
 
         if (!res.body) throw new Error("No response body");
 
