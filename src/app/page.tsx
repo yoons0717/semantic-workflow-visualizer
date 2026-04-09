@@ -1,3 +1,8 @@
+import { Panel } from "@/components/Panel";
+import { PipelineBadge } from "@/components/PipelineBadge";
+
+const PIPELINE_STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
+
 export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
@@ -122,60 +127,6 @@ export default function DashboardPage() {
   );
 }
 
-/* ── Sub-components ── */
-
-const PIPELINE_STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
-
-interface PanelProps {
-  title: string;
-  dotColor: string;
-  badge?: string;
-  children: React.ReactNode;
-  className?: string;
-}
-
-function Panel({ title, dotColor, badge, children, className = "" }: PanelProps) {
-  return (
-    <div
-      className={`flex flex-col overflow-hidden ${className}`}
-      style={{ background: "var(--bg-panel)" }}
-    >
-      <div
-        className="h-[36px] px-4 flex items-center gap-2 shrink-0"
-        style={{ borderBottom: "1px solid var(--border-dim)" }}
-      >
-        <div
-          className="w-[5px] h-[5px] rounded-full shrink-0"
-          style={{ background: dotColor }}
-        />
-        <span
-          className="text-[11px] font-semibold tracking-[0.14em] uppercase"
-          style={{
-            fontFamily: "var(--font-barlow-condensed), sans-serif",
-            color: "var(--text-sec)",
-          }}
-        >
-          {title}
-        </span>
-        {badge && (
-          <div
-            className="ml-auto text-[9px] px-[6px] py-[2px] rounded-[2px]"
-            style={{
-              fontFamily: "var(--font-jetbrains-mono), monospace",
-              color: "var(--text-dim)",
-              background: "var(--bg-raised)",
-              border: "1px solid var(--border-dim)",
-            }}
-          >
-            {badge}
-          </div>
-        )}
-      </div>
-      <div className="flex-1 overflow-hidden p-[14px]">{children}</div>
-    </div>
-  );
-}
-
 function Placeholder({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -187,42 +138,5 @@ function Placeholder({ children }: { children: React.ReactNode }) {
     >
       — {children} —
     </div>
-  );
-}
-
-interface BadgeProps {
-  variant: "idle" | "active" | "warn";
-  children: React.ReactNode;
-}
-
-function PipelineBadge({ variant, children }: BadgeProps) {
-  const styles: Record<string, React.CSSProperties> = {
-    idle: {
-      background: "var(--bg-raised)",
-      color: "var(--text-sec)",
-      border: "1px solid var(--border)",
-    },
-    active: {
-      background: "var(--accent-dim)",
-      color: "var(--accent)",
-      border: "1px solid #00d4a840",
-    },
-    warn: {
-      background: "var(--amber-dim)",
-      color: "var(--amber)",
-      border: "1px solid #f5a62340",
-    },
-  };
-
-  return (
-    <span
-      className="text-[10px] px-2 py-[3px] rounded-[2px] tracking-[0.05em] font-medium"
-      style={{
-        fontFamily: "var(--font-jetbrains-mono), monospace",
-        ...styles[variant],
-      }}
-    >
-      {children}
-    </span>
   );
 }
