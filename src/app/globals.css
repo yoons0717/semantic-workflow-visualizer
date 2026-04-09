@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-root:    #060810;
+  --bg-panel:   #0c0f1a;
+  --bg-raised:  #111827;
+  --bg-input:   #0d1120;
+  --border:     #1e2d45;
+  --border-dim: #141e2e;
+  --text-pri:   #e2e8f4;
+  --text-sec:   #6b7fa3;
+  --text-dim:   #3a4a6a;
+  --accent:     #00d4a8;
+  --accent-dim: #00d4a820;
+  --amber:      #f5a623;
+  --amber-dim:  #f5a62318;
+  --red:        #f04060;
+  --blue:       #4080f0;
+  --purple:     #8855ff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-root:    var(--bg-root);
+  --color-bg-panel:   var(--bg-panel);
+  --color-bg-raised:  var(--bg-raised);
+  --color-bg-input:   var(--bg-input);
+  --color-border:     var(--border);
+  --color-border-dim: var(--border-dim);
+  --color-text-pri:   var(--text-pri);
+  --color-text-sec:   var(--text-sec);
+  --color-text-dim:   var(--text-dim);
+  --color-accent:     var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-swv-amber:  var(--amber);
+  --color-swv-red:    var(--red);
+  --color-swv-blue:   var(--blue);
+  --color-swv-purple: var(--purple);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-root);
+  color: var(--text-pri);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+*::-webkit-scrollbar { width: 3px; height: 3px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+@keyframes pulse-border {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes token-appear {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes card-appear {
+  to { opacity: 1; transform: translateX(0); }
 }

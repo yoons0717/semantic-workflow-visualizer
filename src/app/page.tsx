@@ -1,65 +1,142 @@
-import Image from "next/image";
+import { Panel } from "@/components/Panel";
+import { PipelineBadge } from "@/components/PipelineBadge";
 
-export default function Home() {
+const PIPELINE_STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
+
+export default function DashboardPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col h-full">
+      {/* TOP BAR */}
+      <header
+        className="h-[44px] flex items-center gap-5 px-5 shrink-0 z-10"
+        style={{
+          background: "var(--bg-panel)",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <div
+          className="text-[15px] font-bold tracking-[0.12em] uppercase"
+          style={{
+            fontFamily: "var(--font-barlow-condensed), sans-serif",
+            color: "var(--accent)",
+          }}
+        >
+          SWV{" "}
+          <span className="font-normal" style={{ color: "var(--text-sec)" }}>
+            / Semantic Workflow Visualizer
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <div className="w-px h-5" style={{ background: "var(--border)" }} />
+        <div
+          className="text-[11px] tracking-[0.06em]"
+          style={{ color: "var(--text-sec)" }}
+        >
+          PIPELINE v0.1.0
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          <PipelineBadge variant="idle">GROQ API</PipelineBadge>
+        </div>
+      </header>
+
+      {/* PIPELINE STATUS BAR */}
+      <div
+        className="h-[38px] flex items-center px-5 shrink-0"
+        style={{
+          background: "var(--bg-panel)",
+          borderBottom: "1px solid var(--border-dim)",
+        }}
+      >
+        {PIPELINE_STEPS.map((step, i) => (
+          <div key={step} className="flex items-center gap-2 px-4 relative">
+            {i < PIPELINE_STEPS.length - 1 && (
+              <div
+                className="absolute right-[-1px] top-1/2 -translate-y-1/2 w-[18px] h-px"
+                style={{ background: "var(--border)" }}
+              />
+            )}
+            <div
+              className="w-[6px] h-[6px] rounded-full"
+              style={{ background: "var(--text-dim)" }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <span
+              className="text-[10px] tracking-[0.08em] uppercase"
+              style={{
+                fontFamily: "var(--font-jetbrains-mono), monospace",
+                color: "var(--text-dim)",
+              }}
+            >
+              {step}
+            </span>
+          </div>
+        ))}
+        <div
+          className="ml-auto text-[10px]"
+          style={{
+            fontFamily: "var(--font-jetbrains-mono), monospace",
+            color: "var(--text-sec)",
+          }}
+        >
+          대기 중
         </div>
-      </main>
+      </div>
+
+      {/* MAIN GRID */}
+      <div
+        className="flex-1 grid gap-px overflow-hidden"
+        style={{
+          gridTemplateColumns: "340px 1fr 320px",
+          gridTemplateRows: "1fr 220px",
+          background: "var(--border-dim)",
+        }}
+      >
+        {/* COL 1, ROW 1 — Live Tokenizer */}
+        <Panel title="Live Tokenizer" dotColor="#4faee8" badge="0 tokens">
+          <Placeholder>입력을 기다리는 중</Placeholder>
+        </Panel>
+
+        {/* COL 2, ROW 1 — AI Streaming */}
+        <Panel
+          title="AI 스트리밍 분석"
+          dotColor="var(--accent)"
+          badge="GROQ / llama-3.3-70b"
+        >
+          <Placeholder>분석 대기 중</Placeholder>
+        </Panel>
+
+        {/* COL 3, ROW 1 — Vector Space */}
+        <Panel title="Vector Space" dotColor="var(--purple)" badge="코사인 유사도">
+          <Placeholder>벡터 맵 대기 중</Placeholder>
+        </Panel>
+
+        {/* COL 1, ROW 2 — Prompt Log */}
+        <Panel title="Prompt Log" dotColor="var(--blue)" badge="투명성 패널">
+          <Placeholder>로그 없음</Placeholder>
+        </Panel>
+
+        {/* COL 2-3, ROW 2 — Task Execution */}
+        <Panel
+          title="Task Execution"
+          dotColor="var(--amber)"
+          badge="대기 중"
+          className="col-span-2"
+        >
+          <Placeholder>태스크 없음</Placeholder>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function Placeholder({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="h-full flex items-center justify-center text-[11px] tracking-[0.06em]"
+      style={{
+        fontFamily: "var(--font-jetbrains-mono), monospace",
+        color: "var(--text-dim)",
+      }}
+    >
+      — {children} —
     </div>
   );
 }
