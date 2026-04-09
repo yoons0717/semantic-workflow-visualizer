@@ -43,34 +43,35 @@ src/
 
 ---
 
-## Phase 1: MVP
+## Phase 1: MVP ✅
 
 ### Task 2: 레이아웃 + 상태
-- [ ] `src/store/workflowStore.ts` — 파이프라인 전역 상태 + 액션
-- [ ] `src/app/layout.tsx` — 다크 테마, QueryClientProvider
-- [ ] `src/app/page.tsx` — 3열 그리드 대시보드
+- [x] `src/store/workflowStore.ts` — 파이프라인 전역 상태 + 액션
+- [x] `src/app/layout.tsx` — 다크 테마, QueryClientProvider
+- [x] `src/app/page.tsx` — 3열 그리드 대시보드
 
 ### Task 3: Live Tokenizer
-- [ ] `src/lib/tokenizer.ts` — gpt-tokenizer `cl100k_base` 래퍼
-- [ ] `src/components/TokenizerPanel.tsx` — 실시간 입력 → 토큰 그리드 (ID + 색상)
+- [x] `src/lib/tokenizer.ts` — gpt-tokenizer `cl100k_base` 래퍼
+- [x] `src/components/TokenizerPanel.tsx` — 실시간 입력 → 토큰 그리드 (ID + 색상)
 
 ### Task 4: Groq 스트리밍 + 파이프라인
-- [ ] `src/lib/groq.ts` — Groq 클라이언트 설정
-- [ ] `src/app/api/analyze/route.ts` — `streamText` SSE 엔드포인트
-- [ ] `src/components/StreamingPanel.tsx` — `useChat` 훅 실시간 렌더링
-- [ ] `src/components/PipelineStatus.tsx` — [입력→토큰화→분석→실행] 단계 표시
+- [x] `src/lib/groq.ts` — Groq 클라이언트 설정
+- [x] `src/app/api/analyze/route.ts` — `streamText` SSE 엔드포인트 (`toTextStreamResponse`)
+- [x] `src/hooks/useAnalyze.ts` — fetch + ReadableStream 수동 스트리밍 (`useChat` 대신)
+- [x] `src/components/StreamingPanel.tsx` — 스트리밍 텍스트 실시간 렌더링
+- [x] `src/components/PipelineStatus.tsx` — [입력→토큰화→분석→실행] 단계 표시
 
 ---
 
-## Phase 2: 시맨틱 레이어
+## Phase 2: 시맨틱 레이어 ✅
 
 ### Task 5: Vector Space 시각화
-- [ ] `src/lib/knowledge.ts` — 지식베이스 10개 항목 + 코사인 유사도 계산
-- [ ] `src/components/VectorMap.tsx` — D3 force simulation (`useEffect` 내 DOM 조작)
+- [x] `src/lib/knowledge.ts` — 지식베이스 10개 항목 + 텍스트 기반 Jaccard 유사도 + cosineSimilarity
+- [x] `src/components/VectorMap.tsx` — D3 force simulation, 카테고리별 색상, 분석 시작 후 활성화
 
 ### Task 6: Prompt 투명성 패널
-- [ ] `src/components/PromptLog.tsx` — system prompt + context 결합 형태 표시
-- [ ] `src/app/api/analyze/route.ts` 수정 — 응답 헤더에 prompt log 포함
+- [x] `src/components/PromptLog.tsx` — [SYSTEM] 파란색 / [USER] accent 색 구분 표시
+- [x] `src/app/api/analyze/route.ts` — `x-prompt-log` 헤더에 `encodeURIComponent` 적용 (한국어 인코딩)
 
 ---
 

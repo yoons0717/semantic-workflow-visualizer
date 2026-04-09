@@ -31,6 +31,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 
 export function VectorMap() {
   const tokens = useWorkflowStore((s) => s.tokens);
+  const stage = useWorkflowStore((s) => s.stage);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
 
@@ -167,13 +168,16 @@ export function VectorMap() {
     };
   }, [tokens]);
 
+  if (stage === "idle") {
+    return (
+      <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
+        — 분석 시작 후 활성화 —
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full relative">
-      {tokens.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-          — 입력 후 벡터 맵 활성화 —
-        </div>
-      )}
       <svg ref={svgRef} className="w-full h-full" />
     </div>
   );
