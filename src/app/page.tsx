@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
         {/* COL 2, ROW 1 — AI Streaming */}
         <Panel
-          title="AI 스트리밍 분석"
+          title="AI Streaming Analysis"
           dotColor="var(--accent)"
           badge="GROQ / llama-3.3-70b"
         >
@@ -46,12 +46,12 @@ export default function DashboardPage() {
         </Panel>
 
         {/* COL 3, ROW 1 — Vector Space */}
-        <Panel title="Vector Space" dotColor="var(--purple)" badge="코사인 유사도">
+        <Panel title="Vector Space" dotColor="var(--purple)" badge="Cosine Similarity">
           <VectorMap />
         </Panel>
 
         {/* COL 1, ROW 2 — Prompt Log */}
-        <Panel title="Prompt Log" dotColor="var(--blue)" badge="투명성 패널">
+        <Panel title="Prompt Log" dotColor="var(--blue)" badge="Transparency Panel">
           <PromptLog />
         </Panel>
 
@@ -59,10 +59,10 @@ export default function DashboardPage() {
         <Panel
           title="Task Execution"
           dotColor="var(--amber)"
-          badge="대기 중"
+          badge="Idle"
           className="col-span-2"
         >
-          <Placeholder>태스크 없음</Placeholder>
+          <Placeholder>No tasks</Placeholder>
         </Panel>
       </div>
     </div>

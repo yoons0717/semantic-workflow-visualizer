@@ -9,7 +9,7 @@ export function PromptLog() {
   if (!promptLog) {
     return (
       <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — 로그 없음 —
+        — No log —
       </div>
     );
   }
@@ -18,13 +18,13 @@ export function PromptLog() {
   try {
     parsed = JSON.parse(promptLog);
   } catch {
-    // 파싱 실패 시 raw 텍스트로 표시
+    // Display as raw text if parsing fails
     parsed = { system: promptLog };
   }
 
   return (
     <div className="h-full overflow-y-auto font-mono text-[10px] leading-[1.6] space-y-[10px]">
-      {/* SYSTEM 섹션 */}
+      {/* SYSTEM section */}
       {parsed.system && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">
@@ -36,7 +36,7 @@ export function PromptLog() {
         </div>
       )}
 
-      {/* USER 섹션 — 분석이 시작된 경우 입력값 표시 */}
+      {/* USER section — display input if analysis has started */}
       {input.trim() && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">

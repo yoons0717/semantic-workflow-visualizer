@@ -4,22 +4,22 @@ import type { PipelineStage, Token, WorkflowTask } from '@/types';
 interface WorkflowStore {
   // ── State ──────────────────────────────────────────────────────────────────
 
-  /** 사용자가 입력한 원문 텍스트. TokenizerPanel과 Groq 분석 요청의 원본 소스. */
+  /** Raw text entered by the user. Source for TokenizerPanel and Groq analysis request. */
   input: string;
 
-  /** 입력 텍스트를 토큰화한 결과 배열. 각 토큰은 ID, 텍스트, 색상 인덱스를 포함. */
+  /** Tokenized result array of input text. Each token includes ID, text, and color index. */
   tokens: Token[];
 
-  /** 현재 파이프라인 단계. UI 전반(Pipeline Bar, 패널 상태)의 표시 기준. */
+  /** Current pipeline stage. Display reference for overall UI (Pipeline Bar, panel status). */
   stage: PipelineStage;
 
-  /** Groq SSE 스트림으로 수신된 텍스트 누적값. 청크 단위로 append되어 실시간 렌더링에 사용. */
+  /** Accumulated text received from Groq SSE stream. Appended in chunks for real-time rendering. */
   streamedText: string;
 
-  /** Groq structured output으로 추출된 실행 태스크 목록. TaskCard / TaskExecutor에서 소비. */
+  /** List of execution tasks extracted by Groq structured output. Consumed in TaskCard / TaskExecutor. */
   tasks: WorkflowTask[];
 
-  /** 실제 Groq에 전달된 system prompt + context 결합 문자열. 투명성 패널(PromptLog)에 표시. */
+  /** System prompt + context string actually passed to Groq. Displayed in the transparency panel (PromptLog). */
   promptLog: string;
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -27,11 +27,11 @@ interface WorkflowStore {
   setInput: (input: string) => void;
   setTokens: (tokens: Token[]) => void;
   setStage: (stage: PipelineStage) => void;
-  /** SSE 청크를 기존 streamedText 뒤에 누적한다. */
+  /** Accumulate SSE chunks after existing streamedText. */
   appendStreamedText: (chunk: string) => void;
   setTasks: (tasks: WorkflowTask[]) => void;
   setPromptLog: (log: string) => void;
-  /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
+  /** Reset all state to initial values. Called when starting a new input. */
   reset: () => void;
 }
 

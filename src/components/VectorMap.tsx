@@ -9,7 +9,7 @@ import {
   computeSimilarities,
 } from "@/lib/knowledge";
 
-// 카테고리별 색상 (globals.css CSS 변수와 대응)
+// Category colors (corresponds to globals.css CSS variables)
 const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
   messaging: "#00d4a8", // accent
   task:      "#f5a623", // amber
@@ -30,7 +30,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 }
 
 export function VectorMap() {
-  const tokens = useWorkflowStore((s) => s.tokens);
+  const input = useWorkflowStore((s) => s.input);
   const stage = useWorkflowStore((s) => s.stage);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
@@ -43,21 +43,21 @@ export function VectorMap() {
 
     const init = () => {
       const { width, height } = svg.getBoundingClientRect();
-      // 레이아웃이 아직 계산 안 된 경우 스킵
+      // Skip if layout has not been calculated yet
       if (width === 0 || height === 0) return;
 
       const cx = width / 2;
       const cy = height / 2;
 
-      // 유사도 계산 (토큰 텍스트 기반 Jaccard)
-      const tokenTexts = tokens.map((t) => t.text);
-      const similarities = computeSimilarities(tokenTexts, KNOWLEDGE_BASE);
+      // Similarity calculation (raw input word-based Jaccard)
+      const inputWords = input.toLowerCase().split(/[\s\W]+/).filter(Boolean);
+      const similarities = computeSimilarities(inputWords, KNOWLEDGE_BASE);
 
-      // 노드 구성
+      // Build nodes
       const nodes: SimNode[] = [
         {
           id: "__input__",
-          label: "입력",
+          label: "Input",
           isInput: true,
           similarity: 1,
           x: cx,
@@ -72,7 +72,7 @@ export function VectorMap() {
         })),
       ];
 
-      // 유사도 0.05 이상인 항목만 링크 생성
+      // Create links only for items with similarity >= 0.05
       const LINK_THRESHOLD = 0.05;
       const links: SimLink[] = KNOWLEDGE_BASE
         .filter((item) => (similarities[item.id] ?? 0) >= LINK_THRESHOLD)
@@ -82,12 +82,12 @@ export function VectorMap() {
           similarity: similarities[item.id] ?? 0,
         }));
 
-      // SVG 초기화
+      // Initialize SVG
       d3.select(svg).selectAll("*").remove();
 
       const g = d3.select(svg).append("g");
 
-      // 링크
+      // Links
       const linkSel = g
         .append("g")
         .selectAll<SVGLineElement, SimLink>("line")
@@ -99,7 +99,7 @@ export function VectorMap() {
         )
         .attr("stroke-opacity", (d) => 0.3 + d.similarity * 0.7);
 
-      // 노드 그룹
+      // Node groups
       const nodeSel = g
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
@@ -107,7 +107,7 @@ export function VectorMap() {
         .join("g")
         .style("cursor", "default");
 
-      // 원
+      // Circles
       nodeSel
         .append("circle")
         .attr("r", (d) => {
@@ -126,7 +126,7 @@ export function VectorMap() {
         .attr("stroke-width", 1)
         .attr("stroke-opacity", (d) => (d.isInput ? 0.9 : 0.5 + d.similarity * 0.5));
 
-      // 레이블
+      // Labels
       nodeSel
         .append("text")
         .text((d) => d.label)
@@ -170,19 +170,19 @@ export function VectorMap() {
         });
     };
 
-    // 브라우저 레이아웃 계산 이후 실행
+    // Defer until after browser layout calculation
     raf = requestAnimationFrame(init);
 
     return () => {
       cancelAnimationFrame(raf);
       simRef.current?.stop();
     };
-  }, [tokens, stage]);
+  }, [input, stage]);
 
   if (stage === "idle") {
     return (
       <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — 분석 시작 후 활성화 —
+        — Activate after starting analysis —
       </div>
     );
   }
