@@ -18,13 +18,13 @@ export function PromptLog() {
   try {
     parsed = JSON.parse(promptLog);
   } catch {
-    // Display as raw text if parsing fails
+    // 파싱 실패 시 raw 텍스트로 표시
     parsed = { system: promptLog };
   }
 
   return (
     <div className="h-full overflow-y-auto font-mono text-[10px] leading-[1.6] space-y-[10px]">
-      {/* SYSTEM section */}
+      {/* SYSTEM 섹션 */}
       {parsed.system && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">
@@ -36,7 +36,7 @@ export function PromptLog() {
         </div>
       )}
 
-      {/* USER section — display input if analysis has started */}
+      {/* USER 섹션 — 분석이 시작된 경우 입력값 표시 */}
       {input.trim() && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">

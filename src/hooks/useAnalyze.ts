@@ -38,7 +38,7 @@ export function useAnalyze() {
         setStage("done");
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("[useAnalyze] Analysis request failed:", err);
+          console.error("[useAnalyze] 분석 요청 실패:", err);
         }
         setStage("error");
       }

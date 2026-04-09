@@ -9,7 +9,7 @@ import {
   computeSimilarities,
 } from "@/lib/knowledge";
 
-// Category colors (corresponds to globals.css CSS variables)
+// 카테고리별 색상 (globals.css CSS 변수와 대응)
 const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
   messaging: "#00d4a8", // accent
   task:      "#f5a623", // amber
@@ -43,17 +43,17 @@ export function VectorMap() {
 
     const init = () => {
       const { width, height } = svg.getBoundingClientRect();
-      // Skip if layout has not been calculated yet
+      // 레이아웃이 아직 계산 안 된 경우 스킵
       if (width === 0 || height === 0) return;
 
       const cx = width / 2;
       const cy = height / 2;
 
-      // Similarity calculation (raw input word-based Jaccard)
+      // 유사도 계산 (원본 입력 단어 기반 Jaccard)
       const inputWords = input.toLowerCase().split(/[\s\W]+/).filter(Boolean);
       const similarities = computeSimilarities(inputWords, KNOWLEDGE_BASE);
 
-      // Build nodes
+      // 노드 구성
       const nodes: SimNode[] = [
         {
           id: "__input__",
@@ -72,7 +72,7 @@ export function VectorMap() {
         })),
       ];
 
-      // Create links only for items with similarity >= 0.05
+      // 유사도 0.05 이상인 항목만 링크 생성
       const LINK_THRESHOLD = 0.05;
       const links: SimLink[] = KNOWLEDGE_BASE
         .filter((item) => (similarities[item.id] ?? 0) >= LINK_THRESHOLD)
@@ -82,12 +82,12 @@ export function VectorMap() {
           similarity: similarities[item.id] ?? 0,
         }));
 
-      // Initialize SVG
+      // SVG 초기화
       d3.select(svg).selectAll("*").remove();
 
       const g = d3.select(svg).append("g");
 
-      // Links
+      // 링크
       const linkSel = g
         .append("g")
         .selectAll<SVGLineElement, SimLink>("line")
@@ -99,7 +99,7 @@ export function VectorMap() {
         )
         .attr("stroke-opacity", (d) => 0.3 + d.similarity * 0.7);
 
-      // Node groups
+      // 노드 그룹
       const nodeSel = g
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
@@ -107,7 +107,7 @@ export function VectorMap() {
         .join("g")
         .style("cursor", "default");
 
-      // Circles
+      // 원
       nodeSel
         .append("circle")
         .attr("r", (d) => {
@@ -126,7 +126,7 @@ export function VectorMap() {
         .attr("stroke-width", 1)
         .attr("stroke-opacity", (d) => (d.isInput ? 0.9 : 0.5 + d.similarity * 0.5));
 
-      // Labels
+      // 레이블
       nodeSel
         .append("text")
         .text((d) => d.label)
@@ -170,7 +170,7 @@ export function VectorMap() {
         });
     };
 
-    // Defer until after browser layout calculation
+    // 브라우저 레이아웃 계산 이후 실행
     raf = requestAnimationFrame(init);
 
     return () => {

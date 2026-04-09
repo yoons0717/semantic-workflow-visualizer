@@ -11,8 +11,8 @@ export function StreamingPanel() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Trigger analysis when stage changes to 'tokenizing'.
-  // Read input via getState() to exclude from dependency array.
+  // stage가 'tokenizing'으로 바뀌면 분석 요청 실행.
+  // input은 getState()로 읽어 의존성 배열에서 제외.
   useEffect(() => {
     if (stage !== "tokenizing") return;
 
@@ -26,7 +26,7 @@ export function StreamingPanel() {
     analyze(input);
   }, [stage, analyze]);
 
-  // Auto-scroll during streaming
+  // 스트리밍 중 자동 스크롤
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

@@ -89,7 +89,7 @@ export function TokenizerPanel() {
       {/* Token grid */}
       <div className="flex flex-wrap gap-[4px] overflow-y-auto flex-1 content-start">
         {tokens.map((token, i) => {
-          // Whitespace-only tokens are displayed as "·", others keep original text
+          // 공백 전용 토큰은 "·"로 표시, 그 외는 원문 유지
           const display = token.text.trim() === "" ? "·" : token.text;
           return (
             <div

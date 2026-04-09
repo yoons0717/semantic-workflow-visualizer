@@ -3,7 +3,7 @@ export interface KnowledgeItem {
   label: string;
   category: "messaging" | "task" | "data" | "schedule";
   keywords: string[];
-  /** 20-dimensional hardcoded vector for demo */
+  /** 20차원 데모용 하드코딩 벡터 */
   vector: number[];
 }
 
@@ -81,8 +81,8 @@ export const KNOWLEDGE_BASE: KnowledgeItem[] = [
 ];
 
 /**
- * Calculate Jaccard similarity between input word set and each item's keywords.
- * Works at zero cost in the browser without an embedding API.
+ * 입력 단어 집합과 각 항목의 keywords 집합 간 Jaccard 유사도 계산.
+ * 임베딩 API 없이 브라우저에서 비용 제로로 동작.
  */
 export function computeSimilarities(
   inputWords: string[],
@@ -104,7 +104,7 @@ export function computeSimilarities(
   return result;
 }
 
-/** Cosine similarity between two vectors (used for D3 force strength) */
+/** 두 벡터 간 코사인 유사도 (D3 force strength에 사용) */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) return 0;
   let dot = 0, normA = 0, normB = 0;
