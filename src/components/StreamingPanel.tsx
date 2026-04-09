@@ -1,66 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { useAnalyze } from "@/hooks/useAnalyze";
 
 export function StreamingPanel() {
   const stage = useWorkflowStore((s) => s.stage);
   const streamedText = useWorkflowStore((s) => s.streamedText);
+  const { analyze } = useAnalyze();
 
-  const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // stage가 'tokenizing'으로 바뀌면 분석 요청 실행.
-  // effect 내부에서 input 등 스토어 값을 읽을 때 getState()를 사용하면
-  // 해당 값의 변화에 반응하지 않으므로 의존성 배열에 넣을 필요가 없다.
+  // input은 getState()로 읽어 의존성 배열에서 제외.
   useEffect(() => {
     if (stage !== "tokenizing") return;
 
-    const { input, setStage, appendStreamedText, setPromptLog } =
-      useWorkflowStore.getState();
+    const { input, setStage } = useWorkflowStore.getState();
 
     if (!input.trim()) {
       setStage("idle");
       return;
     }
 
-    const analyze = async () => {
-      setIsStreaming(true);
-      setStage("analyzing");
-
-      try {
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: input }],
-          }),
-        });
-
-        const promptLog = res.headers.get("x-prompt-log");
-        if (promptLog) setPromptLog(promptLog);
-
-        if (!res.body) throw new Error("No response body");
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          appendStreamedText(decoder.decode(value, { stream: true }));
-        }
-
-        setStage("done");
-      } catch {
-        setStage("error");
-      } finally {
-        setIsStreaming(false);
-      }
-    };
-
-    analyze();
-  }, [stage]);
+    analyze(input);
+  }, [stage, analyze]);
 
   // 스트리밍 중 자동 스크롤
   useEffect(() => {
@@ -68,6 +32,8 @@ export function StreamingPanel() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [streamedText]);
+
+  const isStreaming = stage === "analyzing";
 
   return (
     <div

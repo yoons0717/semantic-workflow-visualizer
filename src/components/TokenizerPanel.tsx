@@ -6,12 +6,12 @@ import { tokenizeText } from "@/lib/tokenizer";
 
 const ANALYZABLE_STAGES = ["idle", "done", "error"] as const;
 
-const TOKEN_COLORS = [
-  { bg: "var(--tok-1)", text: "var(--tok-t1)" },
-  { bg: "var(--tok-2)", text: "var(--tok-t2)" },
-  { bg: "var(--tok-3)", text: "var(--tok-t3)" },
-  { bg: "var(--tok-4)", text: "var(--tok-t4)" },
-  { bg: "var(--tok-5)", text: "var(--tok-t5)" },
+const TOKEN_CHIP_CLASSES = [
+  "tok-chip-0",
+  "tok-chip-1",
+  "tok-chip-2",
+  "tok-chip-3",
+  "tok-chip-4",
 ];
 
 export function TokenizerPanel() {
@@ -70,12 +70,11 @@ export function TokenizerPanel() {
         <button
           onClick={() => setStage("tokenizing")}
           disabled={!canAnalyze}
-          className="flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
-          style={
+          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed ${
             canAnalyze
-              ? { background: "#0d2a1e", color: "var(--accent)", borderColor: "#1a4a38" }
-              : { background: "transparent", color: "var(--text-dim)", borderColor: "var(--border-dim)" }
-          }
+              ? "bg-[#0d2a1e] text-accent border-[#1a4a38]"
+              : "bg-transparent text-text-dim border-border-dim"
+          }`}
         >
           ▶ 분석 시작
         </button>
@@ -90,25 +89,17 @@ export function TokenizerPanel() {
       {/* Token grid */}
       <div className="flex flex-wrap gap-[4px] overflow-y-auto flex-1 content-start">
         {tokens.map((token, i) => {
-          const color = TOKEN_COLORS[token.colorIndex];
           // 공백 전용 토큰은 "·"로 표시, 그 외는 원문 유지
           const display = token.text.trim() === "" ? "·" : token.text;
           return (
             <div
               key={`${i}-${token.id}`}
-              className="flex flex-col items-center gap-[1px] min-w-[28px] px-[6px] py-[3px] rounded-[2px]"
-              style={{ background: color.bg }}
+              className={`flex flex-col items-center gap-[1px] min-w-[28px] px-[6px] py-[3px] rounded-[2px] ${TOKEN_CHIP_CLASSES[token.colorIndex]}`}
             >
-              <span
-                className="font-mono text-[11px] font-medium leading-none"
-                style={{ color: color.text }}
-              >
+              <span className="font-mono text-[11px] font-medium leading-none">
                 {display}
               </span>
-              <span
-                className="font-mono text-[8px] leading-none opacity-60"
-                style={{ color: color.text }}
-              >
+              <span className="font-mono text-[8px] leading-none opacity-60">
                 {token.id}
               </span>
             </div>

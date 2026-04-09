@@ -1,8 +1,9 @@
 import { createGroq } from '@ai-sdk/groq';
 
-export const groqProvider = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+const apiKey = process.env.GROQ_API_KEY;
+if (!apiKey) throw new Error('GROQ_API_KEY 환경변수가 설정되지 않았습니다.');
+
+export const groqProvider = createGroq({ apiKey });
 
 export const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
