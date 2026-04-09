@@ -8,30 +8,15 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       {/* TOP BAR */}
-      <header
-        className="h-[44px] flex items-center gap-5 px-5 shrink-0 z-10"
-        style={{
-          background: "var(--bg-panel)",
-          borderBottom: "1px solid var(--border)",
-        }}
-      >
-        <div
-          className="text-[15px] font-bold tracking-[0.12em] uppercase"
-          style={{
-            fontFamily: "var(--font-barlow-condensed), sans-serif",
-            color: "var(--accent)",
-          }}
-        >
+      <header className="h-[44px] flex items-center gap-5 px-5 shrink-0 z-10 bg-bg-panel border-b border-border">
+        <div className="font-condensed text-[15px] font-bold tracking-[0.12em] uppercase text-accent">
           SWV{" "}
-          <span className="font-normal" style={{ color: "var(--text-sec)" }}>
+          <span className="font-normal text-text-sec">
             / Semantic Workflow Visualizer
           </span>
         </div>
-        <div className="w-px h-5" style={{ background: "var(--border)" }} />
-        <div
-          className="text-[11px] tracking-[0.06em]"
-          style={{ color: "var(--text-sec)" }}
-        >
+        <div className="w-px h-5 bg-border" />
+        <div className="text-[11px] tracking-[0.06em] text-text-sec">
           PIPELINE v0.1.0
         </div>
         <div className="ml-auto flex items-center gap-3">
@@ -40,56 +25,25 @@ export default function DashboardPage() {
       </header>
 
       {/* PIPELINE STATUS BAR */}
-      <div
-        className="h-[38px] flex items-center px-5 shrink-0"
-        style={{
-          background: "var(--bg-panel)",
-          borderBottom: "1px solid var(--border-dim)",
-        }}
-      >
+      <div className="h-[38px] flex items-center px-5 shrink-0 bg-bg-panel border-b border-border-dim">
         {PIPELINE_STEPS.map((step, i) => (
           <div key={step} className="flex items-center gap-2 px-4 relative">
             {i < PIPELINE_STEPS.length - 1 && (
-              <div
-                className="absolute right-[-1px] top-1/2 -translate-y-1/2 w-[18px] h-px"
-                style={{ background: "var(--border)" }}
-              />
+              <div className="absolute right-[-1px] top-1/2 -translate-y-1/2 w-[18px] h-px bg-border" />
             )}
-            <div
-              className="w-[6px] h-[6px] rounded-full"
-              style={{ background: "var(--text-dim)" }}
-            />
-            <span
-              className="text-[10px] tracking-[0.08em] uppercase"
-              style={{
-                fontFamily: "var(--font-jetbrains-mono), monospace",
-                color: "var(--text-dim)",
-              }}
-            >
+            <div className="w-[6px] h-[6px] rounded-full bg-text-dim" />
+            <span className="font-mono text-[10px] tracking-[0.08em] uppercase text-text-dim">
               {step}
             </span>
           </div>
         ))}
-        <div
-          className="ml-auto text-[10px]"
-          style={{
-            fontFamily: "var(--font-jetbrains-mono), monospace",
-            color: "var(--text-sec)",
-          }}
-        >
+        <div className="ml-auto font-mono text-[10px] text-text-sec">
           대기 중
         </div>
       </div>
 
       {/* MAIN GRID */}
-      <div
-        className="flex-1 grid gap-px overflow-hidden"
-        style={{
-          gridTemplateColumns: "340px 1fr 320px",
-          gridTemplateRows: "1fr 220px",
-          background: "var(--border-dim)",
-        }}
-      >
+      <div className="flex-1 grid gap-px overflow-hidden bg-border-dim [grid-template-columns:340px_1fr_320px] [grid-template-rows:1fr_220px]">
         {/* COL 1, ROW 1 — Live Tokenizer */}
         <Panel title="Live Tokenizer" dotColor="#4faee8">
           <TokenizerPanel />
@@ -130,13 +84,7 @@ export default function DashboardPage() {
 
 function Placeholder({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className="h-full flex items-center justify-center text-[11px] tracking-[0.06em]"
-      style={{
-        fontFamily: "var(--font-jetbrains-mono), monospace",
-        color: "var(--text-dim)",
-      }}
-    >
+    <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
       — {children} —
     </div>
   );

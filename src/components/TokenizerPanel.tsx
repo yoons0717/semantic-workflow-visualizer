@@ -38,10 +38,7 @@ export function TokenizerPanel() {
   return (
     <div className="flex flex-col gap-[10px] h-full overflow-hidden">
       {/* Input area */}
-      <div
-        className="rounded-[3px] p-[10px_12px] flex flex-col gap-[6px] shrink-0 bg-bg-input"
-        style={{ border: "1px solid var(--border)" }}
-      >
+      <div className="rounded-[3px] p-[10px_12px] flex flex-col gap-[6px] shrink-0 bg-bg-input border border-border">
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
           입력 텍스트
         </div>
