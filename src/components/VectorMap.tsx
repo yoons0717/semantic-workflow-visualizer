@@ -34,10 +34,24 @@ export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
+  const prevStageRef = useRef<typeof stage>("idle");
+  const prevInputRef = useRef<string>("");
 
   useEffect(() => {
     const svg = svgRef.current;
+    const prevStage = prevStageRef.current;
+    const prevInput = prevInputRef.current;
+
+    prevStageRef.current = stage;
+    prevInputRef.current = input;
+
     if (!svg || stage === "idle") return;
+
+    // input이 바뀌거나 idle → non-idle 전환 시에만 재초기화.
+    // stage만 변경된 경우(analyzing → done 등)는 스킵.
+    const inputChanged = input !== prevInput;
+    const wasIdle = prevStage === "idle";
+    if (!inputChanged && !wasIdle) return;
 
     let raf: number;
 
