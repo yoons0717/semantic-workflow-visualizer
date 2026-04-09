@@ -1,5 +1,6 @@
 import { Panel } from "@/components/Panel";
 import { PipelineBadge } from "@/components/PipelineBadge";
+import { TokenizerPanel } from "@/components/TokenizerPanel";
 
 const PIPELINE_STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
 
@@ -90,8 +91,8 @@ export default function DashboardPage() {
         }}
       >
         {/* COL 1, ROW 1 — Live Tokenizer */}
-        <Panel title="Live Tokenizer" dotColor="#4faee8" badge="0 tokens">
-          <Placeholder>입력을 기다리는 중</Placeholder>
+        <Panel title="Live Tokenizer" dotColor="#4faee8">
+          <TokenizerPanel />
         </Panel>
 
         {/* COL 2, ROW 1 — AI Streaming */}
