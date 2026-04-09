@@ -115,7 +115,7 @@ export async function POST(req: Request) {
 
 - HTTP 메서드는 named export (`GET`, `POST`, `PUT`, `DELETE`)
 - 에러 응답: `Response.json({ error: '...' }, { status: 4xx })`
-- 스트리밍 응답: Vercel AI SDK `streamText` + `toDataStreamResponse()`
+- 스트리밍 응답: Vercel AI SDK `streamText` + `toTextStreamResponse()` (클라이언트가 raw TextDecoder로 직접 파싱하는 경우)
 
 ---
 
