@@ -1,8 +1,8 @@
 import { Panel } from "@/components/Panel";
 import { PipelineBadge } from "@/components/PipelineBadge";
+import { PipelineStatus } from "@/components/PipelineStatus";
 import { TokenizerPanel } from "@/components/TokenizerPanel";
-
-const PIPELINE_STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
+import { StreamingPanel } from "@/components/StreamingPanel";
 
 export default function DashboardPage() {
   return (
@@ -25,22 +25,7 @@ export default function DashboardPage() {
       </header>
 
       {/* PIPELINE STATUS BAR */}
-      <div className="h-[38px] flex items-center px-5 shrink-0 bg-bg-panel border-b border-border-dim">
-        {PIPELINE_STEPS.map((step, i) => (
-          <div key={step} className="flex items-center gap-2 px-4 relative">
-            {i < PIPELINE_STEPS.length - 1 && (
-              <div className="absolute right-[-1px] top-1/2 -translate-y-1/2 w-[18px] h-px bg-border" />
-            )}
-            <div className="w-[6px] h-[6px] rounded-full bg-text-dim" />
-            <span className="font-mono text-[10px] tracking-[0.08em] uppercase text-text-dim">
-              {step}
-            </span>
-          </div>
-        ))}
-        <div className="ml-auto font-mono text-[10px] text-text-sec">
-          대기 중
-        </div>
-      </div>
+      <PipelineStatus />
 
       {/* MAIN GRID */}
       <div className="flex-1 grid gap-px overflow-hidden bg-border-dim [grid-template-columns:340px_1fr_320px] [grid-template-rows:1fr_220px]">
@@ -55,7 +40,7 @@ export default function DashboardPage() {
           dotColor="var(--accent)"
           badge="GROQ / llama-3.3-70b"
         >
-          <Placeholder>분석 대기 중</Placeholder>
+          <StreamingPanel />
         </Panel>
 
         {/* COL 3, ROW 1 — Vector Space */}

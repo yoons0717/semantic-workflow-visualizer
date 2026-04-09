@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { tokenizeText } from "@/lib/tokenizer";
 
+const ANALYZABLE_STAGES = ["idle", "done", "error"] as const;
+
 const TOKEN_COLORS = [
   { bg: "var(--tok-1)", text: "var(--tok-t1)" },
   { bg: "var(--tok-2)", text: "var(--tok-t2)" },
@@ -15,8 +17,13 @@ const TOKEN_COLORS = [
 export function TokenizerPanel() {
   const input = useWorkflowStore((s) => s.input);
   const tokens = useWorkflowStore((s) => s.tokens);
+  const stage = useWorkflowStore((s) => s.stage);
   const setInput = useWorkflowStore((s) => s.setInput);
   const setTokens = useWorkflowStore((s) => s.setTokens);
+  const setStage = useWorkflowStore((s) => s.setStage);
+  const reset = useWorkflowStore((s) => s.reset);
+
+  const canAnalyze = input.trim().length > 0 && (ANALYZABLE_STAGES as readonly string[]).includes(stage);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -56,6 +63,28 @@ export function TokenizerPanel() {
         <StatItem label="Tokens" value={tokenCount} />
         <StatItem label="Chars" value={charCount} />
         <StatItem label="Ratio" value={ratio} />
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 shrink-0">
+        <button
+          onClick={() => setStage("tokenizing")}
+          disabled={!canAnalyze}
+          className="flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+          style={
+            canAnalyze
+              ? { background: "#0d2a1e", color: "var(--accent)", borderColor: "#1a4a38" }
+              : { background: "transparent", color: "var(--text-dim)", borderColor: "var(--border-dim)" }
+          }
+        >
+          ▶ 분석 시작
+        </button>
+        <button
+          onClick={() => reset()}
+          className="font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border border-border-dim text-text-dim transition-all duration-150 hover:text-swv-red hover:border-swv-red"
+        >
+          초기화
+        </button>
       </div>
 
       {/* Token grid */}
