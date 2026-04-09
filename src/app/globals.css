@@ -17,6 +17,10 @@
   --red:        #f04060;
   --blue:       #4080f0;
   --purple:     #8855ff;
+
+  /* token chip colors (5-cycle) */
+  --tok-1: #1e3a5a; --tok-2: #1a3d2e; --tok-3: #3a2a1a; --tok-4: #2a1a3a; --tok-5: #1a2a3a;
+  --tok-t1: #4faee8; --tok-t2: #40d47a; --tok-t3: #f5a040; --tok-t4: #b060f0; --tok-t5: #40c0f0;
 }
 
 @theme inline {
@@ -35,6 +39,10 @@
   --color-swv-red:    var(--red);
   --color-swv-blue:   var(--blue);
   --color-swv-purple: var(--purple);
+
+  /* font utilities */
+  --font-mono:      var(--font-jetbrains-mono), monospace;
+  --font-condensed: var(--font-barlow-condensed), sans-serif;
 }
 
 html, body {
