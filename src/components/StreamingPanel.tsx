@@ -4,19 +4,25 @@ import { useEffect, useRef, useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 
 export function StreamingPanel() {
-  const input = useWorkflowStore((s) => s.input);
   const stage = useWorkflowStore((s) => s.stage);
   const streamedText = useWorkflowStore((s) => s.streamedText);
-  const setStage = useWorkflowStore((s) => s.setStage);
-  const appendStreamedText = useWorkflowStore((s) => s.appendStreamedText);
-  const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
 
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // stage가 'tokenizing'으로 바뀌면 분석 요청 실행
+  // stage가 'tokenizing'으로 바뀌면 분석 요청 실행.
+  // effect 내부에서 input 등 스토어 값을 읽을 때 getState()를 사용하면
+  // 해당 값의 변화에 반응하지 않으므로 의존성 배열에 넣을 필요가 없다.
   useEffect(() => {
-    if (stage !== "tokenizing" || !input.trim()) return;
+    if (stage !== "tokenizing") return;
+
+    const { input, setStage, appendStreamedText, setPromptLog } =
+      useWorkflowStore.getState();
+
+    if (!input.trim()) {
+      setStage("idle");
+      return;
+    }
 
     const analyze = async () => {
       setIsStreaming(true);
@@ -54,7 +60,7 @@ export function StreamingPanel() {
     };
 
     analyze();
-  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   // 스트리밍 중 자동 스크롤
   useEffect(() => {
