@@ -3,6 +3,8 @@ import { PipelineBadge } from "@/components/PipelineBadge";
 import { PipelineStatus } from "@/components/PipelineStatus";
 import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
+import { VectorMap } from "@/components/VectorMap";
+import { PromptLog } from "@/components/PromptLog";
 
 export default function DashboardPage() {
   return (
@@ -45,12 +47,12 @@ export default function DashboardPage() {
 
         {/* COL 3, ROW 1 — Vector Space */}
         <Panel title="Vector Space" dotColor="var(--purple)" badge="코사인 유사도">
-          <Placeholder>벡터 맵 대기 중</Placeholder>
+          <VectorMap />
         </Panel>
 
         {/* COL 1, ROW 2 — Prompt Log */}
         <Panel title="Prompt Log" dotColor="var(--blue)" badge="투명성 패널">
-          <Placeholder>로그 없음</Placeholder>
+          <PromptLog />
         </Panel>
 
         {/* COL 2-3, ROW 2 — Task Execution */}
