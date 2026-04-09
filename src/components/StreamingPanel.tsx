@@ -42,7 +42,7 @@ export function StreamingPanel() {
     >
       {!streamedText && !isStreaming && (
         <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-          — 분석 대기 중 —
+          — Waiting for analysis —
         </div>
       )}
       {streamedText && (

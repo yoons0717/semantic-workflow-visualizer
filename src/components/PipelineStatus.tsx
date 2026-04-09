@@ -5,7 +5,7 @@ import type { PipelineStage } from "@/types";
 
 type StepState = "done" | "active" | "dim";
 
-const STEPS = ["입력", "토큰화", "시맨틱 분석", "태스크 추출", "실행"];
+const STEPS = ["Input", "Tokenizing", "Semantic Analysis", "Task Extraction", "Execution"];
 
 const STAGE_MAP: Record<PipelineStage, StepState[]> = {
   idle:       ["dim",  "dim",  "dim",    "dim",    "dim"],
@@ -46,12 +46,12 @@ export function PipelineStatus() {
         </div>
       ))}
       <div className="ml-auto font-mono text-[10px] text-text-sec">
-        {stage === "idle" && "대기 중"}
-        {stage === "tokenizing" && "토큰화 중 ···"}
-        {stage === "analyzing" && "분석 중 ···"}
-        {stage === "executing" && "실행 중 ···"}
-        {stage === "done" && "완료"}
-        {stage === "error" && "오류 발생"}
+        {stage === "idle" && "Idle"}
+        {stage === "tokenizing" && "Tokenizing ···"}
+        {stage === "analyzing" && "Analyzing ···"}
+        {stage === "executing" && "Executing ···"}
+        {stage === "done" && "Done"}
+        {stage === "error" && "Error"}
       </div>
     </div>
   );

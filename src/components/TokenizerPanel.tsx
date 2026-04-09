@@ -47,12 +47,12 @@ export function TokenizerPanel() {
       {/* Input area */}
       <div className="rounded-[3px] p-[10px_12px] flex flex-col gap-[6px] shrink-0 bg-bg-input border border-border">
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
-          입력 텍스트
+          Input Text
         </div>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="텍스트를 입력하세요..."
+          placeholder="Enter text here..."
           rows={3}
           className="resize-none bg-transparent outline-none text-[13px] leading-[1.5] text-text-pri placeholder:opacity-30"
         />
@@ -76,13 +76,13 @@ export function TokenizerPanel() {
               : "bg-transparent text-text-dim border-border-dim"
           }`}
         >
-          ▶ 분석 시작
+          ▶ Start Analysis
         </button>
         <button
           onClick={() => reset()}
           className="font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border border-border-dim text-text-dim transition-all duration-150 hover:text-swv-red hover:border-swv-red"
         >
-          초기화
+          Reset
         </button>
       </div>
 

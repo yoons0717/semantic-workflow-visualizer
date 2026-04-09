@@ -9,7 +9,7 @@ export function PromptLog() {
   if (!promptLog) {
     return (
       <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — 로그 없음 —
+        — No log —
       </div>
     );
   }

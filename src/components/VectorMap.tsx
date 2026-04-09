@@ -30,7 +30,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 }
 
 export function VectorMap() {
-  const tokens = useWorkflowStore((s) => s.tokens);
+  const input = useWorkflowStore((s) => s.input);
   const stage = useWorkflowStore((s) => s.stage);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
@@ -49,15 +49,15 @@ export function VectorMap() {
       const cx = width / 2;
       const cy = height / 2;
 
-      // 유사도 계산 (토큰 텍스트 기반 Jaccard)
-      const tokenTexts = tokens.map((t) => t.text);
-      const similarities = computeSimilarities(tokenTexts, KNOWLEDGE_BASE);
+      // 유사도 계산 (원본 입력 단어 기반 Jaccard)
+      const inputWords = input.toLowerCase().split(/[\s\W]+/).filter(Boolean);
+      const similarities = computeSimilarities(inputWords, KNOWLEDGE_BASE);
 
       // 노드 구성
       const nodes: SimNode[] = [
         {
           id: "__input__",
-          label: "입력",
+          label: "Input",
           isInput: true,
           similarity: 1,
           x: cx,
@@ -177,12 +177,12 @@ export function VectorMap() {
       cancelAnimationFrame(raf);
       simRef.current?.stop();
     };
-  }, [tokens, stage]);
+  }, [input, stage]);
 
   if (stage === "idle") {
     return (
       <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — 분석 시작 후 활성화 —
+        — Activate after starting analysis —
       </div>
     );
   }
