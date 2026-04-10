@@ -30,28 +30,24 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 }
 
 export function VectorMap() {
-  const input = useWorkflowStore((s) => s.input);
   const stage = useWorkflowStore((s) => s.stage);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
   const prevStageRef = useRef<typeof stage>("idle");
-  const prevInputRef = useRef<string>("");
 
   useEffect(() => {
     const svg = svgRef.current;
     const prevStage = prevStageRef.current;
-    const prevInput = prevInputRef.current;
 
     prevStageRef.current = stage;
-    prevInputRef.current = input;
 
     if (!svg || stage === "idle") return;
 
-    // input이 바뀌거나 idle → non-idle 전환 시에만 재초기화.
-    // stage만 변경된 경우(analyzing → done 등)는 스킵.
-    const inputChanged = input !== prevInput;
+    // 분석 버튼 클릭(tokenizing) 또는 idle → non-idle 전환 시에만 재초기화.
+    // analyzing → done 등 stage만 바뀌는 경우는 스킵.
+    const isNewAnalysis = stage === "tokenizing";
     const wasIdle = prevStage === "idle";
-    if (!inputChanged && !wasIdle) return;
+    if (!isNewAnalysis && !wasIdle) return;
 
     let raf: number;
 
@@ -66,7 +62,8 @@ export function VectorMap() {
       const cx = width / 2;
       const cy = height / 2;
 
-      // 유사도 계산 (원본 입력 단어 기반 Jaccard)
+      // 유사도 계산 — 분석 버튼 클릭 시점의 input 사용
+      const input = useWorkflowStore.getState().input;
       const inputWords = input.toLowerCase().split(/[\s\W]+/).filter(Boolean);
       const similarities = computeSimilarities(inputWords, KNOWLEDGE_BASE);
 
@@ -195,7 +192,7 @@ export function VectorMap() {
       cancelAnimationFrame(raf);
       simRef.current?.stop();
     };
-  }, [input, stage]);
+  }, [stage]);
 
   if (stage === "idle") {
     return (
