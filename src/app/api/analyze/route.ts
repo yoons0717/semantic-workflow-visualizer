@@ -2,20 +2,30 @@ import { streamText } from 'ai';
 import { groqProvider, GROQ_MODEL, SYSTEM_PROMPT } from '@/lib/groq';
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  // 스트림 시작 전에 API 키 유무를 확인해 클라이언트가 res.ok로 에러를 감지할 수 있게 함.
+  // AI SDK는 에러가 생겨도 HTTP 200으로 스트림을 시작하기 때문에 여기서 먼저 체크해야 한다.
+  if (!process.env.GROQ_API_KEY) {
+    return new Response(null, { status: 500 });
+  }
 
-  const result = streamText({
-    model: groqProvider(GROQ_MODEL),
-    system: SYSTEM_PROMPT,
-    messages,
-  });
+  try {
+    const { messages } = await req.json();
 
-  const textResponse = result.toTextStreamResponse();
+    const result = streamText({
+      model: groqProvider(GROQ_MODEL),
+      system: SYSTEM_PROMPT,
+      messages,
+    });
 
-  return new Response(textResponse.body, {
-    headers: {
-      ...Object.fromEntries(textResponse.headers.entries()),
-      'x-prompt-log': encodeURIComponent(JSON.stringify({ system: SYSTEM_PROMPT })),
-    },
-  });
+    const textResponse = result.toTextStreamResponse();
+
+    return new Response(textResponse.body, {
+      headers: {
+        ...Object.fromEntries(textResponse.headers.entries()),
+        'x-prompt-log': encodeURIComponent(JSON.stringify({ system: SYSTEM_PROMPT })),
+      },
+    });
+  } catch {
+    return new Response(null, { status: 500 });
+  }
 }
