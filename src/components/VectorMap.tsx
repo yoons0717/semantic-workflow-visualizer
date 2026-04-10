@@ -31,10 +31,12 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   similarity: number;
 }
 
-// 노드 색상 결정: 입력 노드는 흰색 계열, 지식베이스 노드는 카테고리 색상
-function getNodeColor(d: SimNode): string {
-  return d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.category!] ?? "#6b7fa3";
-}
+// 노드 색상: 입력 노드는 흰색 계열, 지식베이스 노드는 카테고리 색상
+const getNodeColor = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.category!] ?? "#6b7fa3";
+// 노드 반지름: 유사도가 높을수록 크게 (collide radius 계산에도 재사용)
+const getNodeRadius = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
+// 레이블 y 오프셋: 원 크기에 맞게 위로 올림
+const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(8 + d.similarity * 10) - 4;
 
 export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -134,7 +136,7 @@ export function VectorMap() {
       // 원: 유사도가 높을수록 크고 불투명하게 표시
       nodeSel
         .append("circle")
-        .attr("r", (d) => (d.isInput ? 10 : 7 + d.similarity * 10))
+        .attr("r", getNodeRadius)
         .attr("fill", getNodeColor)
         .attr("fill-opacity", (d) => (d.isInput ? 1 : 0.25 + d.similarity * 0.75))
         .attr("stroke", getNodeColor)
@@ -145,7 +147,7 @@ export function VectorMap() {
       nodeSel
         .append("text")
         .text((d) => d.label)
-        .attr("dy", (d) => (d.isInput ? -14 : -(8 + d.similarity * 10) - 4))
+        .attr("dy", getLabelOffset)
         .attr("text-anchor", "middle")
         .attr("font-family", "var(--font-jetbrains-mono), monospace")
         .attr("font-size", "9px")
@@ -168,7 +170,7 @@ export function VectorMap() {
             .strength((d) => d.similarity) // 유사도 높을수록 강하게 연결
             .distance(80)                  // 연결된 노드 사이 목표 거리
         )
-        .force("collide", d3.forceCollide<SimNode>().radius(24)) // 노드 겹침 방지
+        .force("collide", d3.forceCollide<SimNode>().radius((d) => getNodeRadius(d) + 15)) // 노드 크기에 따른 동적 충돌 반경
         .on("tick", () => {
           // 매 프레임 D3가 계산한 x, y 좌표를 SVG 요소에 반영
           linkSel
