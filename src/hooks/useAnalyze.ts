@@ -23,6 +23,8 @@ export function useAnalyze() {
           }),
         });
 
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+
         const promptLog = res.headers.get("x-prompt-log");
         if (promptLog) setPromptLog(decodeURIComponent(promptLog));
 
