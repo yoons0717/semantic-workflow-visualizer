@@ -57,8 +57,11 @@ export function VectorMap() {
 
     const init = () => {
       const { width, height } = svg.getBoundingClientRect();
-      // 레이아웃이 아직 계산 안 된 경우 스킵
-      if (width === 0 || height === 0) return;
+      // 레이아웃이 아직 계산 안 된 경우 다음 프레임에 재시도
+      if (width === 0 || height === 0) {
+        raf = requestAnimationFrame(init);
+        return;
+      }
 
       const cx = width / 2;
       const cy = height / 2;
@@ -184,8 +187,9 @@ export function VectorMap() {
         });
     };
 
-    // 브라우저 레이아웃 계산 이후 실행
-    raf = requestAnimationFrame(init);
+    // useEffect는 이미 DOM 커밋 이후 실행되므로 직접 호출.
+    // getBoundingClientRect가 0을 반환하는 경우만 내부에서 RAF로 재시도.
+    init();
 
     return () => {
       cancelAnimationFrame(raf);
