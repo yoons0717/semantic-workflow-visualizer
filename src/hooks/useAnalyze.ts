@@ -6,10 +6,12 @@ import { useWorkflowStore } from "@/store/workflowStore";
 export function useAnalyze() {
   const setStage = useWorkflowStore((s) => s.setStage);
   const appendStreamedText = useWorkflowStore((s) => s.appendStreamedText);
+  const clearStreamedText = useWorkflowStore((s) => s.clearStreamedText);
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
 
   const analyze = useCallback(
     async (input: string) => {
+      clearStreamedText();
       setStage("analyzing");
 
       try {
@@ -43,7 +45,7 @@ export function useAnalyze() {
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, setPromptLog]
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog]
   );
 
   return { analyze };

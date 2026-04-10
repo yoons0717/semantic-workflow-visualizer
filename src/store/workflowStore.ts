@@ -29,6 +29,8 @@ interface WorkflowStore {
   setStage: (stage: PipelineStage) => void;
   /** SSE 청크를 기존 streamedText 뒤에 누적한다. */
   appendStreamedText: (chunk: string) => void;
+  /** 새 분석 시작 전 이전 streamedText를 초기화한다. */
+  clearStreamedText: () => void;
   setTasks: (tasks: WorkflowTask[]) => void;
   setPromptLog: (log: string) => void;
   /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
@@ -52,6 +54,7 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   setStage: (stage) => set({ stage }),
   appendStreamedText: (chunk) =>
     set((state) => ({ streamedText: state.streamedText + chunk })),
+  clearStreamedText: () => set({ streamedText: '' }),
   setTasks: (tasks) => set({ tasks }),
   setPromptLog: (log) => set({ promptLog: log }),
   reset: () => set(initialState),
