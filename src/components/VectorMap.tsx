@@ -34,6 +34,8 @@ export function VectorMap() {
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
   const prevStageRef = useRef<typeof stage>("idle");
+  // 현재 분석 사이클에서 초기화 완료 여부. 중복 init 방지 및 재분석 감지에 사용.
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -41,11 +43,28 @@ export function VectorMap() {
 
     prevStageRef.current = stage;
 
-    if (!svg || stage === "idle") return;
+    // idle: 시뮬레이션 중단 + 플래그 리셋
+    if (stage === "idle") {
+      initializedRef.current = false;
+      simRef.current?.stop();
+      return;
+    }
 
-    // 분석 버튼 클릭(tokenizing) 또는 idle → non-idle 전환 시에만 재초기화.
-    // analyzing → done 등 stage만 바뀌는 경우는 스킵.
-    const isNewAnalysis = stage === "tokenizing";
+    if (!svg) return;
+
+    // tokenizing은 새 분석 사이클의 시작 — 이전 사이클 플래그 리셋
+    // (done/error 상태에서 Reset 없이 재분석하는 경우 포함)
+    if (stage === "tokenizing") {
+      initializedRef.current = false;
+    }
+
+    // 이번 사이클에서 이미 초기화 완료 → 스킵 (시뮬레이션은 계속 실행 중)
+    if (initializedRef.current) return;
+
+    // tokenizing: 정상 경로
+    // analyzing: tokenizing → analyzing 빠른 전환으로 tokenizing effect cleanup이
+    //            RAF를 취소했을 경우의 폴백
+    const isNewAnalysis = stage === "tokenizing" || stage === "analyzing";
     const wasIdle = prevStage === "idle";
     if (!isNewAnalysis && !wasIdle) return;
 
@@ -182,6 +201,9 @@ export function VectorMap() {
             (d) => `translate(${d.x ?? 0},${d.y ?? 0})`
           );
         });
+
+      // 이번 사이클 초기화 완료 표시
+      initializedRef.current = true;
     };
 
     // useEffect는 이미 DOM 커밋 이후 실행되므로 직접 호출.
@@ -190,7 +212,8 @@ export function VectorMap() {
 
     return () => {
       cancelAnimationFrame(raf);
-      simRef.current?.stop();
+      // 시뮬레이션은 여기서 중단하지 않음 — analyzing/done 단계에서도 계속 실행돼야 함.
+      // 중단은 stage === "idle" 분기에서만 수행.
     };
   }, [stage]);
 
