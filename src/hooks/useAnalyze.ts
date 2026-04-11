@@ -8,10 +8,12 @@ export function useAnalyze() {
   const appendStreamedText = useWorkflowStore((s) => s.appendStreamedText);
   const clearStreamedText = useWorkflowStore((s) => s.clearStreamedText);
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
+  const setTasks = useWorkflowStore((s) => s.setTasks);
 
   const analyze = useCallback(
     async (input: string) => {
       clearStreamedText();
+      setTasks([]);
       setStage("analyzing");
 
       try {
@@ -39,7 +41,26 @@ export function useAnalyze() {
           appendStreamedText(decoder.decode(value, { stream: true }));
         }
 
-        setStage("done");
+        // 스트리밍 완료 후 태스크 추출
+        setStage("executing");
+        try {
+          const analysisText = useWorkflowStore.getState().streamedText;
+          const taskRes = await fetch("/api/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ analysisText }),
+          });
+          const tasks = taskRes.ok ? await taskRes.json() : [];
+          setTasks(Array.isArray(tasks) ? tasks : []);
+          // setStage('done')은 TaskExecutor에서 모든 태스크 완료 시 호출.
+          // 태스크가 없으면 여기서 바로 done으로 전환.
+          if (!Array.isArray(tasks) || tasks.length === 0) {
+            setStage("done");
+          }
+        } catch {
+          setTasks([]);
+          setStage("done");
+        }
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
           console.error("[useAnalyze] 분석 요청 실패:", err);
@@ -47,7 +68,7 @@ export function useAnalyze() {
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog]
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks]
   );
 
   return { analyze };

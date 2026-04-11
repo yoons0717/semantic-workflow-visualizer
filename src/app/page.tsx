@@ -5,6 +5,7 @@ import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
 import { VectorMap } from "@/components/VectorMap";
 import { PromptLog } from "@/components/PromptLog";
+import { TaskExecutor } from "@/components/TaskExecutor";
 
 export default function DashboardPage() {
   return (
@@ -59,20 +60,12 @@ export default function DashboardPage() {
         <Panel
           title="Task Execution"
           dotColor="var(--amber)"
-          badge="Idle"
+          badge="Mock Webhook"
           className="col-span-2"
         >
-          <Placeholder>No tasks</Placeholder>
+          <TaskExecutor />
         </Panel>
       </div>
-    </div>
-  );
-}
-
-function Placeholder({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-      — {children} —
     </div>
   );
 }
