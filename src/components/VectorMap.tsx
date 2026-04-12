@@ -70,7 +70,6 @@ export function VectorMap() {
     if (stage !== "tokenizing" && stage !== "analyzing") return;
 
     let raf: number;
-    let resizeObserver: ResizeObserver | null = null;
 
     const init = () => {
       // SVG가 아직 레이아웃 계산 전이라면 (width/height = 0) 다음 프레임에 재시도
@@ -183,18 +182,6 @@ export function VectorMap() {
         });
 
       initializedRef.current = true;
-
-      // 패널 크기가 바뀔 때마다 forceCenter를 새 중심점으로 업데이트하고 살짝 재시동
-      resizeObserver = new ResizeObserver(([entry]) => {
-        if (!simRef.current) return;
-        const { width, height } = entry.contentRect;
-        if (width === 0 || height === 0) return;
-        simRef.current
-          .force("center", d3.forceCenter(width / 2, height / 2))
-          .alpha(0.3)
-          .restart();
-      });
-      resizeObserver.observe(svg);
     };
 
     init();
@@ -203,8 +190,28 @@ export function VectorMap() {
     // 중단은 stage === "idle" 분기에서만 수행한다.
     return () => {
       cancelAnimationFrame(raf);
-      resizeObserver?.disconnect();
     };
+  }, [stage]);
+
+  // 패널 크기 변화를 감지해 forceCenter를 즉시 업데이트하는 observer.
+  // stage effect와 분리해야 stage 전환(tokenizing→analyzing→done) 시에도 끊기지 않는다.
+  // restart 없이 forceCenter만 갱신 — 시뮬레이션이 warm하면 다음 tick에서 자동 반영.
+  // 시뮬레이션이 완전히 멈춰있을 때만 alpha(0.15)로 살짝 재시동.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (stage === "idle" || !svg) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const sim = simRef.current;
+      if (!sim) return;
+      const { width, height } = entry.contentRect;
+      if (width === 0 || height === 0) return;
+      sim.force("center", d3.forceCenter(width / 2, height / 2));
+      if (sim.alpha() <= sim.alphaMin()) {
+        sim.alpha(0.15).restart();
+      }
+    });
+    observer.observe(svg);
+    return () => observer.disconnect();
   }, [stage]);
 
   if (stage === "idle") {
