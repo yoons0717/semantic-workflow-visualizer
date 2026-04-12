@@ -6,6 +6,7 @@ import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
 import { VectorMap } from "@/components/VectorMap";
 import { PromptLog } from "@/components/PromptLog";
+import { TaskExecutor } from "@/components/TaskExecutor";
 
 interface LayoutSizes {
   col1: number;
@@ -155,9 +156,7 @@ export function ResizableLayout() {
         badge="Mock Webhook"
         className="min-h-[180px] md:[grid-column:2/-1]"
       >
-        <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-          — No tasks —
-        </div>
+        <TaskExecutor />
       </Panel>
     </div>
   );
