@@ -43,9 +43,9 @@ export function TokenizerPanel() {
   const ratio = charCount > 0 ? (tokenCount / charCount).toFixed(2) : "0.00";
 
   return (
-    <div className="flex flex-col gap-[10px] h-full overflow-hidden">
+    <div className="flex flex-col gap-2.5 h-full overflow-hidden">
       {/* Input area */}
-      <div className="rounded-[3px] p-[10px_12px] flex flex-col gap-[6px] shrink-0 bg-bg-input border border-border">
+      <div className="rounded-[3px] px-3 py-2.5 flex flex-col gap-1.5 shrink-0 bg-bg-input border border-border">
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
           Input Text
         </div>
@@ -54,12 +54,12 @@ export function TokenizerPanel() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text here..."
           rows={3}
-          className="resize-none bg-transparent outline-none text-[13px] leading-[1.5] text-text-pri placeholder:opacity-30"
+          className="resize-none bg-transparent outline-none text-[13px] leading-normal text-text-pri placeholder:opacity-30"
         />
       </div>
 
       {/* Stats */}
-      <div className="flex gap-[16px] shrink-0">
+      <div className="flex gap-4 shrink-0">
         <StatItem label="Tokens" value={tokenCount} />
         <StatItem label="Chars" value={charCount} />
         <StatItem label="Ratio" value={ratio} />
@@ -70,7 +70,7 @@ export function TokenizerPanel() {
         <button
           onClick={() => setStage("tokenizing")}
           disabled={!canAnalyze}
-          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-[6px] ${
+          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-1.25 rounded-xs border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed ${
             canAnalyze
               ? "bg-[#0d2a1e] text-accent border-[#1a4a38]"
               : stage === "analyzing" || stage === "tokenizing"
@@ -96,21 +96,21 @@ export function TokenizerPanel() {
         </button>
         <button
           onClick={() => reset()}
-          className="font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border border-border-dim text-text-dim transition-all duration-150 hover:text-swv-red hover:border-swv-red"
+          className="font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-1.25 rounded-xs border border-border-dim text-text-dim transition-all duration-150 hover:text-swv-red hover:border-swv-red"
         >
           Reset
         </button>
       </div>
 
       {/* Token grid */}
-      <div className="flex flex-wrap gap-[4px] overflow-y-auto flex-1 content-start">
+      <div className="flex flex-wrap gap-1 overflow-y-auto flex-1 content-start">
         {tokens.map((token, i) => {
           // 공백 전용 토큰은 "·"로 표시, 그 외는 원문 유지
           const display = token.text.trim() === "" ? "·" : token.text;
           return (
             <div
               key={`${i}-${token.id}`}
-              className={`flex flex-col items-center gap-[1px] min-w-[28px] px-[6px] py-[3px] rounded-[2px] ${TOKEN_CHIP_CLASSES[token.colorIndex]}`}
+              className={`flex flex-col items-center gap-px min-w-7 px-1.5 py-0.75 rounded-xs ${TOKEN_CHIP_CLASSES[token.colorIndex]}`}
             >
               <span className="font-mono text-[11px] font-medium leading-none">
                 {display}
@@ -128,7 +128,7 @@ export function TokenizerPanel() {
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex flex-col gap-[2px]">
+    <div className="flex flex-col gap-0.5">
       <div className="font-mono text-[18px] font-bold leading-none text-accent">
         {value}
       </div>

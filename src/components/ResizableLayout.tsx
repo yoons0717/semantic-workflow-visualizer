@@ -90,7 +90,7 @@ export function ResizableLayout() {
       }}
     >
       {/* COL 1, ROW 1 — Live Tokenizer */}
-      <Panel title="Live Tokenizer" dotColor="#4faee8" className="min-h-[240px]">
+      <Panel title="Live Tokenizer" dotColor="#4faee8" className="min-h-60">
         <TokenizerPanel />
       </Panel>
 
@@ -99,7 +99,7 @@ export function ResizableLayout() {
         className="hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] cursor-col-resize group transition-colors duration-150 select-none"
         onPointerDown={(e) => handlePointerDown("col1", e)}
       >
-        <div className="w-[2px] h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
+        <div className="w-0.5 h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
       </div>
 
       {/* COL 2, ROW 1 — AI Streaming */}
@@ -107,7 +107,7 @@ export function ResizableLayout() {
         title="AI Streaming Analysis"
         dotColor="var(--accent)"
         badge="GROQ / llama-3.3-70b"
-        className="min-h-[300px]"
+        className="min-h-75"
       >
         <StreamingPanel />
       </Panel>
@@ -117,7 +117,7 @@ export function ResizableLayout() {
         className="hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] cursor-col-resize group transition-colors duration-150 select-none"
         onPointerDown={(e) => handlePointerDown("col3", e)}
       >
-        <div className="w-[2px] h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
+        <div className="w-0.5 h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
       </div>
 
       {/* COL 3, ROW 1 — Vector Space */}
@@ -125,7 +125,7 @@ export function ResizableLayout() {
         title="Vector Space"
         dotColor="var(--purple)"
         badge="Cosine Similarity"
-        className="min-h-[240px]"
+        className="min-h-60"
       >
         <VectorMap />
       </Panel>
@@ -136,7 +136,7 @@ export function ResizableLayout() {
         style={{ gridColumn: "1 / -1" }}
         onPointerDown={(e) => handlePointerDown("row2", e)}
       >
-        <div className="h-[2px] w-8 group-hover:w-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
+        <div className="h-0.5 w-8 group-hover:w-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
       </div>
 
       {/* COL 1, ROW 2 — Prompt Log */}
@@ -144,7 +144,7 @@ export function ResizableLayout() {
         title="Prompt Log"
         dotColor="var(--blue)"
         badge="Transparency Panel"
-        className="min-h-[180px]"
+        className="min-h-45"
       >
         <PromptLog />
       </Panel>
@@ -154,7 +154,7 @@ export function ResizableLayout() {
         title="Task Execution"
         dotColor="var(--amber)"
         badge="Mock Webhook"
-        className="min-h-[180px] md:[grid-column:2/-1]"
+        className="min-h-45 md:col-[2/-1]"
       >
         <TaskExecutor />
       </Panel>
