@@ -202,6 +202,55 @@ D3 force 구성:
 
 ---
 
+## 테스트 입력 예시
+
+아래 문장들을 **Tokenizer 패널**에 붙여넣고 Start Analysis를 눌러보세요.
+
+**Slack + Jira 동시 추출**
+```
+Send a deployment complete notification to the team on Slack and create a done ticket in Jira
+```
+
+**Email + 일정**
+```
+Email the client a project summary and schedule a follow-up meeting for next Monday
+```
+
+**데이터 + 리포트**
+```
+Query the sales database for last month's records and generate a summary report
+```
+
+**코드 리뷰 요청**
+```
+Request a code review for the new authentication PR and notify the backend team on Slack
+```
+
+**멀티 태스크 (4종)**
+```
+Send a Slack alert to #ops, open a Jira bug ticket for the payment failure, email the finance team, and upload the error log to storage
+```
+
+**한국어 입력 (토크나이저 비교용)**
+```
+배포 완료 알림을 슬랙 #dev 채널에 보내고 지라에 완료 티켓을 생성해줘
+```
+
+---
+
+## 한계
+
+| 항목 | 현재 | 비고 |
+|---|---|---|
+| 유사도 계산 | Jaccard (단어 정확 일치) | "notify" ≠ "notification" — 의미가 같아도 단어가 다르면 유사도 0 |
+| 지식베이스 벡터 | 임의 20차원 값 | 실제 임베딩 아님, 의미 공간 미반영 |
+| 지식베이스 크기 | 10개 고정 | 추가하려면 `knowledge.ts` 직접 수정 필요 |
+| 태스크 실행 | 전부 Mock | 실제 Slack · Jira · Email API 미연동, 항상 성공 반환 |
+| 태스크 타입 | 4종 (slack · jira · email · generic) | 그 외는 전부 generic으로 분류됨 |
+| 태스크 추출 | regex JSON 파싱 | LLM 응답 형식이 깨지면 조용히 `[]` 반환 |
+
+---
+
 ## 라이선스
 
 MIT
