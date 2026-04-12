@@ -36,7 +36,7 @@ const getNodeColor = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.ca
 // 노드 반지름: 유사도가 높을수록 크게 (collide radius 계산에도 재사용)
 const getNodeRadius = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
 // 레이블 y 오프셋: 원 크기에 맞게 위로 올림
-const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(8 + d.similarity * 10) - 4;
+const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(12 + d.similarity * 10);
 
 export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -145,8 +145,7 @@ export function VectorMap() {
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
         .data(nodes)
-        .join("g")
-        .style("cursor", "default");
+        .join("g");
 
       // 원: 유사도가 높을수록 크고 불투명하게 표시
       nodeSel
@@ -214,7 +213,7 @@ export function VectorMap() {
   // 시뮬레이션이 완전히 멈춰있을 때만 alpha(0.15)로 살짝 재시동.
   useEffect(() => {
     const svg = svgRef.current;
-    if (stage === "idle" || !svg) return;
+    if (!svg) return; // idle일 때는 SVG가 DOM에 없으므로 null — 별도 가드 불필요
     const observer = new ResizeObserver(([entry]) => {
       const sim = simRef.current;
       if (!sim) return;
