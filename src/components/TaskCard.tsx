@@ -18,14 +18,14 @@ const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
 
 const STATUS_CONFIG: Record<
   WorkflowTask["status"],
-  { label: string; className: string }
+  { label: string; className: string; footer?: string }
 > = {
-  pending: { label: "Pending", className: "text-swv-amber" },
+  pending:  { label: "Pending",  className: "text-swv-amber" },
   approved: { label: "Approved", className: "text-accent" },
   rejected: { label: "Rejected", className: "text-text-dim" },
-  running: { label: "Running", className: "text-[#4faee8]" },
-  success: { label: "Done", className: "text-accent" },
-  failed: { label: "Failed", className: "text-swv-red" },
+  running:  { label: "Running",  className: "text-[#4faee8]" },
+  success:  { label: "Done",     className: "text-accent",   footer: "✓ Executed" },
+  failed:   { label: "Failed",   className: "text-swv-red",  footer: "✗ Failed" },
 };
 
 export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
@@ -109,14 +109,9 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         </div>
       )}
 
-      {task.status === "success" && (
-        <div className="mt-1 pt-2 border-t border-border-dim font-mono text-[9px] text-accent tracking-[0.05em]">
-          ✓ Executed
-        </div>
-      )}
-      {task.status === "failed" && (
-        <div className="mt-1 pt-2 border-t border-border-dim font-mono text-[9px] text-swv-red tracking-[0.05em]">
-          ✗ Failed
+      {statusCfg.footer && (
+        <div className={`mt-1 pt-2 border-t border-border-dim font-mono text-[9px] tracking-[0.05em] ${statusCfg.className}`}>
+          {statusCfg.footer}
         </div>
       )}
     </div>

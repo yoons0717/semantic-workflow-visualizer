@@ -4,6 +4,8 @@ import { useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { executeTask } from "@/lib/mockWebhook";
 import { TaskCard } from "@/components/TaskCard";
+import { EmptyState } from "@/components/EmptyState";
+import { Spinner } from "@/components/Spinner";
 import type { WorkflowTask } from "@/types";
 
 const TERMINAL_STATUSES: WorkflowTask["status"][] = ["success", "rejected", "failed"];
@@ -60,17 +62,13 @@ export function TaskExecutor() {
   if (tasks.length === 0) {
     if (stage === "executing") {
       return (
-        <div className="h-full flex items-center justify-center gap-[8px] font-mono text-[11px] tracking-[0.06em] text-swv-amber">
-          <span className="inline-block w-[10px] h-[10px] border border-current border-t-transparent rounded-full animate-spin" />
+        <EmptyState className="text-swv-amber">
+          <Spinner size="md" />
           Extracting tasks…
-        </div>
+        </EmptyState>
       );
     }
-    return (
-      <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — No tasks extracted —
-      </div>
-    );
+    return <EmptyState>— No tasks extracted —</EmptyState>;
   }
 
   return (

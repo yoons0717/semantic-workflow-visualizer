@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { KNOWLEDGE_BASE, KnowledgeItem, computeSimilarities } from "@/lib/knowledge";
+import { EmptyState } from "@/components/EmptyState";
 
 // 카테고리별 노드 색상 (globals.css의 CSS 변수와 동일한 값)
 const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
@@ -229,11 +230,7 @@ export function VectorMap() {
   }, [stage]);
 
   if (stage === "idle") {
-    return (
-      <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — Activate after starting analysis —
-      </div>
-    );
+    return <EmptyState>— Activate after starting analysis —</EmptyState>;
   }
 
   return (

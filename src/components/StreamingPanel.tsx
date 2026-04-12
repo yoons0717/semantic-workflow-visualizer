@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useAnalyze } from "@/hooks/useAnalyze";
+import { EmptyState } from "@/components/EmptyState";
 
 export function StreamingPanel() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -41,9 +42,7 @@ export function StreamingPanel() {
       className="h-full overflow-y-auto text-[13px] leading-[1.7] text-text-pri"
     >
       {!streamedText && !isStreaming && (
-        <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-          — Waiting for analysis —
-        </div>
+        <EmptyState>— Waiting for analysis —</EmptyState>
       )}
       {streamedText && (
         <span>

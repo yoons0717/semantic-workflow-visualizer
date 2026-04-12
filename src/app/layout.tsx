@@ -36,10 +36,7 @@ export default function RootLayout({
       lang="ko"
       className={`${barlow.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable} h-full`}
     >
-      <body
-        className="h-full overflow-hidden"
-        style={{ fontFamily: "var(--font-barlow), sans-serif", fontSize: "13px" }}
-      >
+      <body className="font-sans text-[13px]">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -30,6 +30,31 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+function DragHandle({
+  direction,
+  onPointerDown,
+  style,
+}: {
+  direction: "col" | "row";
+  onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+  style?: React.CSSProperties;
+}) {
+  const isCol = direction === "col";
+  return (
+    <div
+      className={`hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] ${isCol ? "cursor-col-resize" : "cursor-row-resize"} group transition-colors duration-150 select-none`}
+      onPointerDown={onPointerDown}
+      style={style}
+    >
+      <div
+        className={`bg-border group-hover:bg-accent rounded-full transition-all duration-150 ${
+          isCol ? "w-0.5 h-8 group-hover:h-12" : "h-0.5 w-8 group-hover:w-12"
+        }`}
+      />
+    </div>
+  );
+}
+
 export function ResizableLayout() {
   const [sizes, setSizes] = useState<LayoutSizes>(DEFAULTS);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,12 +120,7 @@ export function ResizableLayout() {
       </Panel>
 
       {/* VERTICAL HANDLE — col1 | col2 */}
-      <div
-        className="hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] cursor-col-resize group transition-colors duration-150 select-none"
-        onPointerDown={(e) => handlePointerDown("col1", e)}
-      >
-        <div className="w-0.5 h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
-      </div>
+      <DragHandle direction="col" onPointerDown={(e) => handlePointerDown("col1", e)} />
 
       {/* COL 2, ROW 1 — AI Streaming */}
       <Panel
@@ -113,12 +133,7 @@ export function ResizableLayout() {
       </Panel>
 
       {/* VERTICAL HANDLE — col2 | col3 */}
-      <div
-        className="hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] cursor-col-resize group transition-colors duration-150 select-none"
-        onPointerDown={(e) => handlePointerDown("col3", e)}
-      >
-        <div className="w-0.5 h-8 group-hover:h-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
-      </div>
+      <DragHandle direction="col" onPointerDown={(e) => handlePointerDown("col3", e)} />
 
       {/* COL 3, ROW 1 — Vector Space */}
       <Panel
@@ -131,13 +146,11 @@ export function ResizableLayout() {
       </Panel>
 
       {/* HORIZONTAL HANDLE — row1 | row2 */}
-      <div
-        className="hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] cursor-row-resize group transition-colors duration-150 select-none"
+      <DragHandle
+        direction="row"
         style={{ gridColumn: "1 / -1" }}
         onPointerDown={(e) => handlePointerDown("row2", e)}
-      >
-        <div className="h-0.5 w-8 group-hover:w-12 bg-border group-hover:bg-accent rounded-full transition-all duration-150" />
-      </div>
+      />
 
       {/* COL 1, ROW 2 — Prompt Log */}
       <Panel
