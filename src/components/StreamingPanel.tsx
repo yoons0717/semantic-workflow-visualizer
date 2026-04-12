@@ -49,7 +49,7 @@ export function StreamingPanel() {
         <span>
           {streamedText}
           {isStreaming && (
-            <span className="inline-block w-[7px] h-[14px] bg-accent opacity-90 align-middle ml-[2px] animate-[cursor-blink_0.7s_step-end_infinite]" />
+            <span className="inline-block w-1.75 h-3.5 bg-accent opacity-90 align-middle ml-0.5 animate-[cursor-blink_0.7s_step-end_infinite]" />
           )}
         </span>
       )}

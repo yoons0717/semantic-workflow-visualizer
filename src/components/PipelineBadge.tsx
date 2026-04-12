@@ -14,7 +14,7 @@ const variantClasses: Record<PipelineBadgeProps["variant"], string> = {
 export function PipelineBadge({ variant, children }: PipelineBadgeProps) {
   return (
     <span
-      className={`font-mono text-[10px] px-2 py-[3px] rounded-[2px] tracking-[0.05em] font-medium ${variantClasses[variant]}`}
+      className={`font-mono text-[10px] px-2 py-0.75 rounded-xs tracking-[0.05em] font-medium ${variantClasses[variant]}`}
     >
       {children}
     </span>

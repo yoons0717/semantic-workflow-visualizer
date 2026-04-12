@@ -40,21 +40,21 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
 
   return (
     <div
-      className={`flex flex-col gap-2 min-w-[220px] max-w-[260px] shrink-0 rounded-[3px] border p-3 transition-opacity duration-300 ${
+      className={`flex flex-col gap-2 min-w-55 max-w-65 shrink-0 rounded-[3px] border p-3 transition-opacity duration-300 ${
         task.status === "rejected" ? "opacity-40 border-border-dim" : "border-border bg-bg-raised"
       }`}
     >
       {/* Header */}
       <div className="flex items-center gap-2">
         <span
-          className={`font-mono text-[9px] px-[5px] py-[2px] rounded-[2px] border uppercase tracking-[0.06em] ${TYPE_COLORS[task.type]}`}
+          className={`font-mono text-[9px] px-1.25 py-0.5 rounded-xs border uppercase tracking-[0.06em] ${TYPE_COLORS[task.type]}`}
         >
           {task.type}
         </span>
         <span className={`ml-auto font-mono text-[9px] tracking-[0.05em] ${statusCfg.className}`}>
           {task.status === "running" ? (
             <span className="flex items-center gap-1">
-              <span className="w-[5px] h-[5px] rounded-full bg-[#4faee8] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4faee8] animate-pulse" />
               {statusCfg.label}
             </span>
           ) : (
@@ -69,14 +69,14 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
       </div>
 
       {/* Description */}
-      <div className="text-[10px] text-text-sec leading-[1.5] line-clamp-2">
+      <div className="text-[10px] text-text-sec leading-normal line-clamp-2">
         {task.description}
       </div>
 
       {/* Payload */}
-      <div className="flex flex-col gap-[5px] mt-1">
+      <div className="flex flex-col gap-1.25 mt-1">
         {Object.entries(payload).map(([key, value]) => (
-          <div key={key} className="flex flex-col gap-[2px]">
+          <div key={key} className="flex flex-col gap-0.5">
             <span className="font-mono text-[8px] tracking-[0.06em] text-text-dim uppercase">
               {key}
             </span>
@@ -85,7 +85,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
               value={value}
               onChange={(e) => handlePayloadChange(key, e.target.value)}
               disabled={isTerminal}
-              className="w-full bg-bg-panel border border-border-dim rounded-[2px] px-[6px] py-[3px] font-mono text-[10px] text-text-pri focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-default"
+              className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-default"
             />
           </div>
         ))}
@@ -96,13 +96,13 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         <div className="flex gap-2 mt-1 pt-2 border-t border-border-dim">
           <button
             onClick={() => onApprove(payload)}
-            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-[5px] rounded-[2px] bg-accent-dim text-accent border border-[#00d4a840] hover:bg-[#00d4a820] transition-colors"
+            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-[#00d4a840] hover:bg-[#00d4a820] transition-colors"
           >
             Approve
           </button>
           <button
             onClick={onReject}
-            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-[5px] rounded-[2px] text-text-dim border border-border-dim hover:text-text-sec hover:border-border transition-colors"
+            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs text-text-dim border border-border-dim hover:text-text-sec hover:border-border transition-colors"
           >
             Reject
           </button>

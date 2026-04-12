@@ -23,14 +23,14 @@ export function PromptLog() {
   }
 
   return (
-    <div className="h-full overflow-y-auto font-mono text-[10px] leading-[1.6] space-y-[10px]">
+    <div className="h-full overflow-y-auto font-mono text-[10px] leading-[1.6] space-y-2.5">
       {/* SYSTEM 섹션 */}
       {parsed.system && (
         <div>
-          <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">
+          <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-1">
             [SYSTEM]
           </div>
-          <pre className="whitespace-pre-wrap break-words text-swv-blue opacity-80">
+          <pre className="whitespace-pre-wrap wrap-break-word text-swv-blue opacity-80">
             {parsed.system}
           </pre>
         </div>
@@ -39,10 +39,10 @@ export function PromptLog() {
       {/* USER 섹션 — 분석이 시작된 경우 입력값 표시 */}
       {input.trim() && (
         <div>
-          <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-[4px]">
+          <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-1">
             [USER]
           </div>
-          <pre className="whitespace-pre-wrap break-words text-accent opacity-80">
+          <pre className="whitespace-pre-wrap wrap-break-word text-accent opacity-80">
             {input}
           </pre>
         </div>
