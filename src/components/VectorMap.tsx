@@ -70,6 +70,7 @@ export function VectorMap() {
     if (stage !== "tokenizing" && stage !== "analyzing") return;
 
     let raf: number;
+    let resizeObserver: ResizeObserver | null = null;
 
     const init = () => {
       // SVG가 아직 레이아웃 계산 전이라면 (width/height = 0) 다음 프레임에 재시도
@@ -182,13 +183,28 @@ export function VectorMap() {
         });
 
       initializedRef.current = true;
+
+      // 패널 크기가 바뀔 때마다 forceCenter를 새 중심점으로 업데이트하고 살짝 재시동
+      resizeObserver = new ResizeObserver(([entry]) => {
+        if (!simRef.current) return;
+        const { width, height } = entry.contentRect;
+        if (width === 0 || height === 0) return;
+        simRef.current
+          .force("center", d3.forceCenter(width / 2, height / 2))
+          .alpha(0.3)
+          .restart();
+      });
+      resizeObserver.observe(svg);
     };
 
     init();
 
     // 시뮬레이션은 여기서 중단하지 않는다 — analyzing → done 단계에서도 계속 실행돼야 함.
     // 중단은 stage === "idle" 분기에서만 수행한다.
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      resizeObserver?.disconnect();
+    };
   }, [stage]);
 
   if (stage === "idle") {
