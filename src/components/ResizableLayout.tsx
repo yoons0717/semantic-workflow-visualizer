@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Panel } from "@/components/Panel";
 import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
@@ -21,6 +21,8 @@ interface DragState {
   id: HandleId;
   startPos: number;
   startSize: number;
+  /** 반대쪽 컬럼 크기 — pointerdown 시점 snapshot (col1↔col3 제약 계산용) */
+  otherSize: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -32,37 +34,48 @@ export function ResizableLayout() {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
 
+  // window 레벨 리스너: setPointerCapture 없이도 포인터가 어디 있든 이벤트 수신
+  useEffect(() => {
+    function onPointerMove(e: PointerEvent) {
+      if (!dragRef.current || !containerRef.current) return;
+      const { id, startPos, startSize, otherSize } = dragRef.current;
+      const delta = (id === "row2" ? e.clientY : e.clientX) - startPos;
+      const rect = containerRef.current.getBoundingClientRect();
+
+      let newSize: number;
+      if (id === "col1") {
+        const max = Math.min(rect.width * 0.4, rect.width - otherSize - 12 - 200);
+        newSize = clamp(startSize + delta, 160, max);
+      } else if (id === "col3") {
+        const max = Math.min(rect.width * 0.4, rect.width - otherSize - 12 - 200);
+        newSize = clamp(startSize - delta, 160, max);
+      } else {
+        newSize = clamp(startSize + delta, 120, rect.height * 0.6);
+      }
+
+      setSizes((prev) => ({ ...prev, [id]: newSize }));
+    }
+
+    function onPointerUp() {
+      dragRef.current = null;
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+  }, []); // 마운트 시 한 번만 — dragRef/containerRef는 ref이므로 클로저 stale 없음
+
   function handlePointerDown(id: HandleId, e: React.PointerEvent<HTMLDivElement>) {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    e.preventDefault(); // 텍스트 선택 방지
     dragRef.current = {
       id,
       startPos: id === "row2" ? e.clientY : e.clientX,
       startSize: sizes[id],
+      otherSize: id === "col1" ? sizes.col3 : id === "col3" ? sizes.col1 : 0,
     };
-  }
-
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current || !containerRef.current) return;
-    const { id, startPos, startSize } = dragRef.current;
-    const delta = (id === "row2" ? e.clientY : e.clientX) - startPos;
-    const rect = containerRef.current.getBoundingClientRect();
-
-    let newSize: number;
-    if (id === "col1") {
-      const max = Math.min(rect.width * 0.4, rect.width - sizes.col3 - 12 - 200);
-      newSize = clamp(startSize + delta, 160, max);
-    } else if (id === "col3") {
-      const max = Math.min(rect.width * 0.4, rect.width - sizes.col1 - 12 - 200);
-      newSize = clamp(startSize - delta, 160, max);
-    } else {
-      newSize = clamp(startSize + delta, 120, rect.height * 0.6);
-    }
-
-    setSizes((prev) => ({ ...prev, [id]: newSize }));
-  }
-
-  function handlePointerUp() {
-    dragRef.current = null;
   }
 
   return (
@@ -73,8 +86,6 @@ export function ResizableLayout() {
         gridTemplateColumns: `${sizes.col1}px 6px 1fr 6px ${sizes.col3}px`,
         gridTemplateRows: `1fr 6px ${sizes.row2}px`,
       }}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
     >
       {/* COL 1, ROW 1 — Live Tokenizer */}
       <Panel title="Live Tokenizer" dotColor="#4faee8" className="min-h-[240px]">
