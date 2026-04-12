@@ -36,7 +36,7 @@ const getNodeColor = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.ca
 // 노드 반지름: 유사도가 높을수록 크게 (collide radius 계산에도 재사용)
 const getNodeRadius = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
 // 레이블 y 오프셋: 원 크기에 맞게 위로 올림
-const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(8 + d.similarity * 10) - 4;
+const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(12 + d.similarity * 10);
 
 export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -111,8 +111,23 @@ export function VectorMap() {
         .map(({ item, similarity }) => ({ source: "__input__", target: item.id, similarity }));
 
       // ── SVG 초기화 및 요소 생성 ─────────────────────────────────────────────
-      d3.select(svg).selectAll("*").remove();
-      const g = d3.select(svg).append("g"); // 모든 요소를 담는 최상위 그룹
+      const svgSel = d3.select(svg);
+      svgSel.selectAll("*").remove();
+      const g = svgSel.append("g"); // 모든 요소를 담는 최상위 그룹
+
+      // ── Pan / Zoom (드래그로 시야 이동, 스크롤·핀치로 확대축소) ────────────
+      // d3.zoom이 마우스·터치 이벤트를 모두 처리한다.
+      // g의 transform만 바꾸므로 시뮬레이션 좌표계와 충돌 없음.
+      const zoom = d3.zoom<SVGSVGElement, unknown>()
+        .scaleExtent([0.3, 4])
+        .on("zoom", ({ transform }) => {
+          g.attr("transform", transform.toString());
+        });
+      svgSel.call(zoom);
+      // 더블클릭·더블탭으로 초기 뷰로 복귀
+      svgSel.on("dblclick.zoom", () => {
+        svgSel.transition().duration(300).call(zoom.transform, d3.zoomIdentity);
+      });
 
       // 링크(선): D3의 data().join() 패턴 = 데이터 배열 길이만큼 <line> 태그를 자동 생성
       // 유사도가 높을수록 선이 굵고 밝아짐
@@ -130,8 +145,7 @@ export function VectorMap() {
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
         .data(nodes)
-        .join("g")
-        .style("cursor", "default");
+        .join("g");
 
       // 원: 유사도가 높을수록 크고 불투명하게 표시
       nodeSel
@@ -188,7 +202,30 @@ export function VectorMap() {
 
     // 시뮬레이션은 여기서 중단하지 않는다 — analyzing → done 단계에서도 계속 실행돼야 함.
     // 중단은 stage === "idle" 분기에서만 수행한다.
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, [stage]);
+
+  // 패널 크기 변화를 감지해 forceCenter를 즉시 업데이트하는 observer.
+  // stage effect와 분리해야 stage 전환(tokenizing→analyzing→done) 시에도 끊기지 않는다.
+  // restart 없이 forceCenter만 갱신 — 시뮬레이션이 warm하면 다음 tick에서 자동 반영.
+  // 시뮬레이션이 완전히 멈춰있을 때만 alpha(0.15)로 살짝 재시동.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return; // idle일 때는 SVG가 DOM에 없으므로 null — 별도 가드 불필요
+    const observer = new ResizeObserver(([entry]) => {
+      const sim = simRef.current;
+      if (!sim) return;
+      const { width, height } = entry.contentRect;
+      if (width === 0 || height === 0) return;
+      sim.force("center", d3.forceCenter(width / 2, height / 2));
+      if (sim.alpha() <= sim.alphaMin()) {
+        sim.alpha(0.15).restart();
+      }
+    });
+    observer.observe(svg);
+    return () => observer.disconnect();
   }, [stage]);
 
   if (stage === "idle") {
@@ -201,7 +238,7 @@ export function VectorMap() {
 
   return (
     <div className="h-full w-full relative">
-      <svg ref={svgRef} className="w-full h-full" />
+      <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
     </div>
   );
 }

@@ -1,11 +1,6 @@
-import { Panel } from "@/components/Panel";
 import { PipelineBadge } from "@/components/PipelineBadge";
 import { PipelineStatus } from "@/components/PipelineStatus";
-import { TokenizerPanel } from "@/components/TokenizerPanel";
-import { StreamingPanel } from "@/components/StreamingPanel";
-import { VectorMap } from "@/components/VectorMap";
-import { PromptLog } from "@/components/PromptLog";
-import { TaskExecutor } from "@/components/TaskExecutor";
+import { ResizableLayout } from "@/components/ResizableLayout";
 
 export default function DashboardPage() {
   return (
@@ -30,42 +25,8 @@ export default function DashboardPage() {
       {/* PIPELINE STATUS BAR */}
       <PipelineStatus />
 
-      {/* MAIN GRID */}
-      <div className="flex-1 grid gap-px overflow-hidden bg-border-dim [grid-template-columns:340px_1fr_320px] [grid-template-rows:1fr_220px]">
-        {/* COL 1, ROW 1 — Live Tokenizer */}
-        <Panel title="Live Tokenizer" dotColor="#4faee8">
-          <TokenizerPanel />
-        </Panel>
-
-        {/* COL 2, ROW 1 — AI Streaming */}
-        <Panel
-          title="AI Streaming Analysis"
-          dotColor="var(--accent)"
-          badge="GROQ / llama-3.3-70b"
-        >
-          <StreamingPanel />
-        </Panel>
-
-        {/* COL 3, ROW 1 — Vector Space */}
-        <Panel title="Vector Space" dotColor="var(--purple)" badge="Cosine Similarity">
-          <VectorMap />
-        </Panel>
-
-        {/* COL 1, ROW 2 — Prompt Log */}
-        <Panel title="Prompt Log" dotColor="var(--blue)" badge="Transparency Panel">
-          <PromptLog />
-        </Panel>
-
-        {/* COL 2-3, ROW 2 — Task Execution */}
-        <Panel
-          title="Task Execution"
-          dotColor="var(--amber)"
-          badge="Mock Webhook"
-          className="col-span-2"
-        >
-          <TaskExecutor />
-        </Panel>
-      </div>
+      {/* RESIZABLE GRID */}
+      <ResizableLayout />
     </div>
   );
 }
