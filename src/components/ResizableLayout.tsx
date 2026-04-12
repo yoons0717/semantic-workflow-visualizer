@@ -50,7 +50,8 @@ export function ResizableLayout() {
         const max = Math.min(rect.width * 0.4, rect.width - otherSize - 12 - 200);
         newSize = clamp(startSize - delta, 160, max);
       } else {
-        newSize = clamp(startSize + delta, 120, rect.height * 0.6);
+        // 아래로 드래그 → 핸들이 내려감 → 하단 row 축소 (1fr 행이 커짐)
+        newSize = clamp(startSize - delta, 120, rect.height * 0.6);
       }
 
       setSizes((prev) => ({ ...prev, [id]: newSize }));
