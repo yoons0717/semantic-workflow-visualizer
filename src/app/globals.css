@@ -16,6 +16,7 @@
   --amber-dim:  #f5a62318;
   --red:        #f04060;
   --blue:       #4080f0;
+  --teal:       #4faee8;
   --purple:     #8855ff;
 
   /* stage button muted backgrounds */
@@ -46,6 +47,7 @@
   --color-swv-amber:  var(--amber);
   --color-swv-red:    var(--red);
   --color-swv-blue:   var(--blue);
+  --color-swv-teal:   var(--teal);
   --color-swv-purple: var(--purple);
 
   /* font utilities */

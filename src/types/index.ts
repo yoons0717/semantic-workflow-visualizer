@@ -15,11 +15,3 @@ export interface WorkflowTask {
   status: 'pending' | 'approved' | 'rejected' | 'running' | 'success' | 'failed';
 }
 
-export interface WorkflowState {
-  input: string;
-  tokens: Token[];
-  stage: PipelineStage;
-  streamedText: string;
-  tasks: WorkflowTask[];
-  promptLog: string;
-}
