@@ -78,19 +78,19 @@ src/
 ## Phase 3: 실행 레이어
 
 ### Task 7: Task 추출
-- [ ] `src/app/api/tasks/route.ts` — structured output으로 JSON 태스크 추출
-- [ ] `src/components/TaskCard.tsx` — 태스크 카드 (payload 인라인 편집)
+- [x] `src/app/api/tasks/route.ts` — structured output으로 JSON 태스크 추출
+- [x] `src/components/TaskCard.tsx` — 태스크 카드 (payload 인라인 편집)
 
 ### Task 8: Mock 실행 + 승인 UI
-- [ ] `src/lib/mockWebhook.ts` — Slack/Jira Mock (딜레이 + 성공 응답)
-- [ ] `src/components/TaskExecutor.tsx` — 승인/거부 + 실행 상태
+- [x] `src/lib/mockWebhook.ts` — Slack/Jira Mock (딜레이 + 성공 응답)
+- [x] `src/components/TaskExecutor.tsx` — 승인/거부 + 실행 상태
 
 ---
 
 ## Phase 4: 배포
 
 ### Task 9: Vercel 배포
-- [ ] Vercel 연동 + 환경변수 설정
+- [x] Vercel 연동 + 환경변수 설정
 
 ---
 
