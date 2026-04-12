@@ -50,13 +50,12 @@ export function useAnalyze() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ analysisText }),
           });
-          const tasks = taskRes.ok ? await taskRes.json() : [];
-          setTasks(Array.isArray(tasks) ? tasks : []);
+          const raw = taskRes.ok ? await taskRes.json() : [];
+          const tasks = Array.isArray(raw) ? raw : [];
+          setTasks(tasks);
           // setStage('done')은 TaskExecutor에서 모든 태스크 완료 시 호출.
           // 태스크가 없으면 여기서 바로 done으로 전환.
-          if (!Array.isArray(tasks) || tasks.length === 0) {
-            setStage("done");
-          }
+          if (tasks.length === 0) setStage("done");
         } catch {
           setTasks([]);
           setStage("done");

@@ -28,22 +28,33 @@ export function TaskExecutor() {
     }
   }, [setStage]);
 
-  async function handleApprove(taskId: string, updatedPayload: Record<string, string>) {
-    const task = useWorkflowStore.getState().tasks.find((t) => t.id === taskId);
-    if (!task) return;
+  const handleApprove = useCallback(
+    async (taskId: string, updatedPayload: Record<string, string>) => {
+      const task = useWorkflowStore.getState().tasks.find((t) => t.id === taskId);
+      if (!task) return;
 
-    const taskWithPayload = { ...task, payload: updatedPayload };
-    updateTask(taskId, { status: "running", payload: updatedPayload });
+      const taskWithPayload = { ...task, payload: updatedPayload };
+      updateTask(taskId, { status: "running", payload: updatedPayload });
 
-    const result = await executeTask(taskWithPayload);
-    updateTask(taskId, { status: result.success ? "success" : "failed" });
-    checkAllDone();
-  }
+      try {
+        const result = await executeTask(taskWithPayload);
+        updateTask(taskId, { status: result.success ? "success" : "failed" });
+      } catch {
+        updateTask(taskId, { status: "failed" });
+      } finally {
+        checkAllDone();
+      }
+    },
+    [updateTask, checkAllDone]
+  );
 
-  function handleReject(taskId: string) {
-    updateTask(taskId, { status: "rejected" });
-    checkAllDone();
-  }
+  const handleReject = useCallback(
+    (taskId: string) => {
+      updateTask(taskId, { status: "rejected" });
+      checkAllDone();
+    },
+    [updateTask, checkAllDone]
+  );
 
   if (tasks.length === 0) {
     return (
