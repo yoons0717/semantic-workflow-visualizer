@@ -10,9 +10,9 @@ interface TaskCardProps {
 }
 
 const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
-  slack:   "text-swv-teal border-[#4faee840]",
-  jira:    "text-[#a78bfa] border-[#a78bfa40]",
-  email:   "text-swv-amber border-[#f5a62340]",
+  slack:   "text-swv-teal border-swv-teal/25",
+  jira:    "text-[#a78bfa] border-[#a78bfa]/25",
+  email:   "text-swv-amber border-swv-amber/25",
   generic: "text-text-sec border-border",
 };
 
@@ -96,7 +96,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         <div className="flex gap-2 mt-1 pt-2 border-t border-border-dim">
           <button
             onClick={() => onApprove(payload)}
-            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-[#00d4a840] hover:bg-[#00d4a820] transition-colors"
+            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-accent/25 hover:bg-accent/10 transition-colors"
           >
             Approve
           </button>
