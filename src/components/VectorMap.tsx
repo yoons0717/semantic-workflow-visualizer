@@ -111,8 +111,23 @@ export function VectorMap() {
         .map(({ item, similarity }) => ({ source: "__input__", target: item.id, similarity }));
 
       // ── SVG 초기화 및 요소 생성 ─────────────────────────────────────────────
-      d3.select(svg).selectAll("*").remove();
-      const g = d3.select(svg).append("g"); // 모든 요소를 담는 최상위 그룹
+      const svgSel = d3.select(svg);
+      svgSel.selectAll("*").remove();
+      const g = svgSel.append("g"); // 모든 요소를 담는 최상위 그룹
+
+      // ── Pan / Zoom (드래그로 시야 이동, 스크롤·핀치로 확대축소) ────────────
+      // d3.zoom이 마우스·터치 이벤트를 모두 처리한다.
+      // g의 transform만 바꾸므로 시뮬레이션 좌표계와 충돌 없음.
+      const zoom = d3.zoom<SVGSVGElement, unknown>()
+        .scaleExtent([0.3, 4])
+        .on("zoom", ({ transform }) => {
+          g.attr("transform", transform.toString());
+        });
+      svgSel.call(zoom);
+      // 더블클릭·더블탭으로 초기 뷰로 복귀
+      svgSel.on("dblclick.zoom", () => {
+        svgSel.transition().duration(300).call(zoom.transform, d3.zoomIdentity);
+      });
 
       // 링크(선): D3의 data().join() 패턴 = 데이터 배열 길이만큼 <line> 태그를 자동 생성
       // 유사도가 높을수록 선이 굵고 밝아짐
@@ -224,7 +239,7 @@ export function VectorMap() {
 
   return (
     <div className="h-full w-full relative">
-      <svg ref={svgRef} className="w-full h-full" />
+      <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
     </div>
   );
 }
