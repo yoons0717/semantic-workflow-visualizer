@@ -70,13 +70,29 @@ export function TokenizerPanel() {
         <button
           onClick={() => setStage("tokenizing")}
           disabled={!canAnalyze}
-          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed ${
+          className={`flex-1 font-mono text-[9px] tracking-[0.08em] uppercase px-3 py-[5px] rounded-[2px] border transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-[6px] ${
             canAnalyze
               ? "bg-[#0d2a1e] text-accent border-[#1a4a38]"
+              : stage === "analyzing" || stage === "tokenizing"
+              ? "bg-[#1a1a0a] text-swv-amber border-[#3a2a0a]"
+              : stage === "executing"
+              ? "bg-[#0a1020] text-swv-blue border-[#1a2a40]"
               : "bg-transparent text-text-dim border-border-dim"
           }`}
         >
-          ▶ Start Analysis
+          {stage === "analyzing" || stage === "tokenizing" ? (
+            <>
+              <span className="inline-block w-[8px] h-[8px] border border-current border-t-transparent rounded-full animate-spin" />
+              Analyzing…
+            </>
+          ) : stage === "executing" ? (
+            <>
+              <span className="inline-block w-[8px] h-[8px] border border-current border-t-transparent rounded-full animate-spin" />
+              Extracting tasks…
+            </>
+          ) : (
+            "▶ Start Analysis"
+          )}
         </button>
         <button
           onClick={() => reset()}

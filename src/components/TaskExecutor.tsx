@@ -10,6 +10,7 @@ const TERMINAL_STATUSES: WorkflowTask["status"][] = ["success", "rejected", "fai
 
 export function TaskExecutor() {
   const tasks = useWorkflowStore((s) => s.tasks);
+  const stage = useWorkflowStore((s) => s.stage);
   const setTasks = useWorkflowStore((s) => s.setTasks);
   const setStage = useWorkflowStore((s) => s.setStage);
 
@@ -57,6 +58,14 @@ export function TaskExecutor() {
   );
 
   if (tasks.length === 0) {
+    if (stage === "executing") {
+      return (
+        <div className="h-full flex items-center justify-center gap-[8px] font-mono text-[11px] tracking-[0.06em] text-swv-amber">
+          <span className="inline-block w-[10px] h-[10px] border border-current border-t-transparent rounded-full animate-spin" />
+          Extracting tasks…
+        </div>
+      );
+    }
     return (
       <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
         — No tasks extracted —
