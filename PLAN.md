@@ -105,3 +105,84 @@ GROQ_API_KEY=gsk_...
 - D3 컴포넌트는 `"use client"` 선언 필수, DOM 조작은 `useEffect` 내부에서만
 - Groq 무료 rate limit (분당 30req) → 입력 debounce 500ms 적용
 - `serverExternalPackages: ['groq-sdk']` — `next.config.ts` 설정 필수
+
+---
+
+## Phase 5: 태스크 파싱 견고성
+
+**목적:** regex 기반 JSON 파싱 → AI SDK `generateObject` + Zod 스키마 검증으로 교체
+
+### Task 10: Zod 스키마 + generateObject
+
+- [x] `npm install zod` (이미 의존성으로 포함 — zod 4.3.6)
+- [x] `src/lib/taskSchema.ts` (신규) — `WorkflowTaskSchema`, `WorkflowTaskArraySchema` 정의
+- [x] `src/app/api/tasks/route.ts` — `generateText` + regex 블록 제거, `generateObject({ schema: z.object({ tasks: WorkflowTaskArraySchema }) })` 로 교체
+- [x] 검증 실패 시 catch → `[]` 반환 유지
+
+---
+
+## Phase 6: 진짜 Semantic — Jina AI 임베딩
+
+**목적:** VectorMap을 실제 코사인 유사도로 구동 — 프로젝트 이름 "Semantic" 정당화
+
+### Task 11: 임베딩 API 연동
+
+- [ ] `src/app/api/embeddings/route.ts` (신규)
+  - module-level 캐시: `Map<string, number[]>` — 10개 knowledge item, cold start 1회 계산 후 재사용
+  - POST `{ text: string }` → Jina `jina-embeddings-v3` 호출 → `Record<id, number>` 반환
+  - `JINA_API_KEY` 없으면 `{}` 반환 (graceful degradation)
+- [ ] `src/lib/knowledge.ts` — `computeSimilarities` (Jaccard) 제거, 각 항목에 `description` 필드 추가, `vector` 필드 제거
+- [ ] `src/store/workflowStore.ts` — `similarities: Record<string, number>` 상태 + `setSimilarities` 액션 추가, `reset()`에 포함
+- [ ] `src/hooks/useAnalyze.ts` — `/api/analyze` 와 `/api/embeddings` 를 `Promise.allSettled` 로 병렬 실행, 결과 → `setSimilarities`
+- [ ] `src/components/VectorMap.tsx` — 클라이언트 Jaccard 제거, `store.similarities` 읽기, `similarities` 변경 시 D3 노드/링크 업데이트, fallback: 비어있으면 uniform 0.1
+- [ ] Vector Space 패널 배지 `"Jaccard Sim"` → `"Jina Embeddings"` 변경
+
+**환경 변수 추가:**
+```
+JINA_API_KEY=jina_...
+```
+
+---
+
+## Phase 7: 진짜 Slack 연동
+
+**목적:** Slack 태스크 승인 시 실제 메시지 전송, Live/Mock 구분 표시
+
+### Task 12: Slack Proxy Route + TaskCard 배지
+
+- [ ] `src/app/api/webhook/slack/route.ts` (신규) — Slack Incoming Webhook 서버사이드 프록시 (`SLACK_WEBHOOK_URL` 없으면 mock fallback)
+- [ ] `src/types/index.ts` — `WorkflowTask`에 `executionMode?: 'live' | 'mock'` 필드 추가
+- [ ] `src/lib/mockWebhook.ts` — Slack 타입은 `/api/webhook/slack` 호출, 나머지는 기존 mock 유지, 반환값에 `mode: 'live' | 'mock'` 추가
+- [ ] `src/components/TaskExecutor.tsx` — `executeTask` 완료 후 `updateTask({ executionMode: result.mode })`
+- [ ] `src/components/TaskCard.tsx` — `status === 'success'` 시 `executionMode` 에 따라 `LIVE`(녹색) / `MOCK`(회색) 배지 표시
+
+**환경 변수 추가:**
+```
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+```
+
+---
+
+## Phase 8: UX 개선
+
+### Task 13: 에러 상태 UX
+
+- [ ] `src/store/workflowStore.ts` — `errorMessage: string | null` 상태 + `setErrorMessage` 액션 추가
+- [ ] `src/hooks/useAnalyze.ts` — catch 블록에서 `setErrorMessage(humanReadableError(err))` 호출 (네트워크 오류 / API key 없음 / 태스크 추출 실패 구분)
+- [ ] `src/components/ErrorBanner.tsx` (신규) — `stage === 'error'` 시 렌더링, "Try Again" → `reset()`
+- [ ] `src/components/StreamingPanel.tsx` — `<ErrorBanner />` 조건부 렌더링
+
+### Task 14: VectorMap 노드 툴팁
+
+- [ ] `src/components/VectorMap.tsx` — `pointerenter` / `pointerleave` 이벤트 추가, React state로 툴팁 위치/내용 관리
+- [ ] 툴팁 내용: `label`, `category`(색상), 코사인 유사도 점수, `description`
+
+---
+
+## 환경 변수 최종 목록
+
+```
+GROQ_API_KEY=gsk_...        # 기존
+JINA_API_KEY=jina_...       # Phase 6 신규
+SLACK_WEBHOOK_URL=https://  # Phase 7 신규
+```
