@@ -1,18 +1,11 @@
 import { generateText } from 'ai';
+import { z } from 'zod';
 import { groqProvider, GROQ_MODEL } from '@/lib/groq';
-import type { WorkflowTask } from '@/types';
+import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
-const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks and return them as a JSON array ONLY — no explanation, no markdown, no code block.
+const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
 
-Schema for each task:
-{
-  "id": "<unique string, e.g. task-1>",
-  "title": "<short action title>",
-  "description": "<one sentence describing what this task does>",
-  "type": "<'slack' | 'jira' | 'email' | 'generic'>",
-  "payload": { "<key>": "<value>" },
-  "status": "pending"
-}
+const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks and return ONLY a JSON object with a "tasks" array.
 
 Type selection rules:
 - "slack": sending messages, notifications, alerts to a channel or user
@@ -26,9 +19,10 @@ Payload keys by type:
 - email: { "to": "...", "subject": "...", "body": "..." }
 - generic: { "action": "..." }
 
-If there are no executable tasks in the analysis, return an empty array: []
+Return ONLY this JSON structure, no other text:
+{ "tasks": [ { "id": "task-1", "title": "...", "description": "...", "type": "...", "payload": {...}, "status": "pending" } ] }
 
-Return ONLY valid JSON. No other text.`;
+If there are no executable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
   if (!process.env.GROQ_API_KEY) {
@@ -46,18 +40,17 @@ export async function POST(req: Request) {
       model: groqProvider(GROQ_MODEL),
       system: TASK_EXTRACTION_PROMPT,
       messages: [{ role: 'user', content: analysisText }],
+      providerOptions: {
+        groq: { response_format: { type: 'json_object' } },
+      },
     });
 
-    // JSON 블록이 있으면 추출, 없으면 전체 텍스트 시도
-    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) ?? text.match(/(\[[\s\S]*\])/);
-    const rawJson = jsonMatch ? jsonMatch[1] : text;
-
-    const tasks: WorkflowTask[] = JSON.parse(rawJson.trim());
-
-    if (!Array.isArray(tasks)) return Response.json([]);
+    const raw = JSON.parse(text);
+    const { tasks } = ResponseSchema.parse(raw);
 
     return Response.json(tasks);
   } catch {
     return Response.json([]);
   }
+
 }

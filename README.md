@@ -141,6 +141,7 @@ src/
 | 토크나이저 | gpt-tokenizer (cl100k_base) | 브라우저에서 직접 실행되는 순수 JS 라이브러리. API 호출 없이 GPT와 동일한 토큰화 결과를 얻을 수 있음 |
 | 상태 관리 | Zustand | 비동기 파이프라인 상태(6단계 stage + 스트리밍 누적)를 Redux 없이 단순하게 관리 |
 | 스타일링 | Tailwind CSS v4 + CSS 변수 디자인 토큰 | 다크 테마 대시보드 일관성 |
+| 스키마 검증 | Zod 4 | API 응답 구조 검증. LLM 응답이 예상 스키마와 다를 경우 빈 배열로 안전하게 fallback |
 | 언어 | TypeScript 5 | 전체 타입 안전성 |
 
 ---
@@ -155,7 +156,7 @@ Vercel AI SDK의 `useChat` 대신 fetch + ReadableStream을 직접 사용. `useC
 1. `POST /api/analyze` → Groq SSE 스트림 수신
 2. `TextDecoder`로 청크 디코딩 → Zustand store에 누적
 3. 스트림 종료 후 누적 텍스트를 `POST /api/tasks`로 전송해 태스크 추출
-4. Groq 응답 JSON 파싱 → `WorkflowTask[]` 반환
+4. Groq `json_object` mode로 JSON 수신 → Zod 스키마 검증 → `WorkflowTask[]` 반환
 
 ---
 
@@ -247,7 +248,7 @@ Send a Slack alert to #ops, open a Jira bug ticket for the payment failure, emai
 | 지식베이스 크기 | 10개 고정 | 추가하려면 `knowledge.ts` 직접 수정 필요 |
 | 태스크 실행 | 전부 Mock | 실제 Slack · Jira · Email API 미연동, 항상 성공 반환 |
 | 태스크 타입 | 4종 (slack · jira · email · generic) | 그 외는 전부 generic으로 분류됨 |
-| 태스크 추출 | regex JSON 파싱 | LLM 응답 형식이 깨지면 조용히 `[]` 반환 |
+| 태스크 추출 | Groq `json_object` mode + Zod 스키마 검증 | LLM이 항상 valid JSON 반환, 스키마 불일치 시 `[]` fallback |
 
 ---
 
