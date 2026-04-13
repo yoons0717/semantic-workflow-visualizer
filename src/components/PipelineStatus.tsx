@@ -23,6 +23,15 @@ const DOT_CLASSES: Record<StepState, string> = {
   error:  "bg-swv-red shadow-[0_0_8px_var(--red)]",
 };
 
+const STAGE_LABELS: Record<PipelineStage, string> = {
+  idle:       "Idle",
+  tokenizing: "Tokenizing ···",
+  analyzing:  "Analyzing ···",
+  executing:  "Executing ···",
+  done:       "Done",
+  error:      "Error",
+};
+
 const LABEL_CLASSES: Record<StepState, string> = {
   done:   "text-accent",
   active: "text-swv-amber",
@@ -48,12 +57,7 @@ export function PipelineStatus() {
         </div>
       ))}
       <div className="ml-auto font-mono text-[10px] text-text-sec">
-        {stage === "idle" && "Idle"}
-        {stage === "tokenizing" && "Tokenizing ···"}
-        {stage === "analyzing" && "Analyzing ···"}
-        {stage === "executing" && "Executing ···"}
-        {stage === "done" && "Done"}
-        {stage === "error" && "Error"}
+        {STAGE_LABELS[stage]}
       </div>
     </div>
   );

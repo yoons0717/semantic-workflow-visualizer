@@ -10,22 +10,22 @@ interface TaskCardProps {
 }
 
 const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
-  slack: "text-[#4faee8] border-[#4faee840]",
-  jira: "text-[#a78bfa] border-[#a78bfa40]",
-  email: "text-swv-amber border-[#f5a62340]",
+  slack:   "text-swv-teal border-swv-teal/25",
+  jira:    "text-[#a78bfa] border-[#a78bfa]/25",
+  email:   "text-swv-amber border-swv-amber/25",
   generic: "text-text-sec border-border",
 };
 
 const STATUS_CONFIG: Record<
   WorkflowTask["status"],
-  { label: string; className: string }
+  { label: string; className: string; footer?: string }
 > = {
-  pending: { label: "Pending", className: "text-swv-amber" },
+  pending:  { label: "Pending",  className: "text-swv-amber" },
   approved: { label: "Approved", className: "text-accent" },
   rejected: { label: "Rejected", className: "text-text-dim" },
-  running: { label: "Running", className: "text-[#4faee8]" },
-  success: { label: "Done", className: "text-accent" },
-  failed: { label: "Failed", className: "text-swv-red" },
+  running:  { label: "Running",  className: "text-swv-teal" },
+  success:  { label: "Done",     className: "text-accent",   footer: "✓ Executed" },
+  failed:   { label: "Failed",   className: "text-swv-red",  footer: "✗ Failed" },
 };
 
 export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
@@ -54,7 +54,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         <span className={`ml-auto font-mono text-[9px] tracking-[0.05em] ${statusCfg.className}`}>
           {task.status === "running" ? (
             <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4faee8] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-swv-teal animate-pulse" />
               {statusCfg.label}
             </span>
           ) : (
@@ -96,7 +96,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         <div className="flex gap-2 mt-1 pt-2 border-t border-border-dim">
           <button
             onClick={() => onApprove(payload)}
-            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-[#00d4a840] hover:bg-[#00d4a820] transition-colors"
+            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-accent/25 hover:bg-accent/10 transition-colors"
           >
             Approve
           </button>
@@ -109,14 +109,9 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         </div>
       )}
 
-      {task.status === "success" && (
-        <div className="mt-1 pt-2 border-t border-border-dim font-mono text-[9px] text-accent tracking-[0.05em]">
-          ✓ Executed
-        </div>
-      )}
-      {task.status === "failed" && (
-        <div className="mt-1 pt-2 border-t border-border-dim font-mono text-[9px] text-swv-red tracking-[0.05em]">
-          ✗ Failed
+      {statusCfg.footer && (
+        <div className={`mt-1 pt-2 border-t border-border-dim font-mono text-[9px] tracking-[0.05em] ${statusCfg.className}`}>
+          {statusCfg.footer}
         </div>
       )}
     </div>

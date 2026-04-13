@@ -16,7 +16,16 @@
   --amber-dim:  #f5a62318;
   --red:        #f04060;
   --blue:       #4080f0;
+  --teal:       #4faee8;
   --purple:     #8855ff;
+
+  /* stage button muted backgrounds */
+  --bg-accent-muted:     #0d2a1e;
+  --bg-amber-muted:      #1a1a0a;
+  --bg-blue-muted:       #0a1020;
+  --border-accent-muted: #1a4a38;
+  --border-amber-muted:  #3a2a0a;
+  --border-blue-muted:   #1a2a40;
 
   /* token chip colors (5-cycle) */
   --tok-1: #1e3a5a; --tok-2: #1a3d2e; --tok-3: #3a2a1a; --tok-4: #2a1a3a; --tok-5: #1a2a3a;
@@ -38,11 +47,20 @@
   --color-swv-amber:  var(--amber);
   --color-swv-red:    var(--red);
   --color-swv-blue:   var(--blue);
+  --color-swv-teal:   var(--teal);
   --color-swv-purple: var(--purple);
 
   /* font utilities */
+  --font-sans:      var(--font-barlow), sans-serif;
   --font-mono:      var(--font-jetbrains-mono), monospace;
   --font-condensed: var(--font-barlow-condensed), sans-serif;
+
+  --color-bg-accent-muted:     var(--bg-accent-muted);
+  --color-bg-amber-muted:      var(--bg-amber-muted);
+  --color-bg-blue-muted:       var(--bg-blue-muted);
+  --color-border-accent-muted: var(--border-accent-muted);
+  --color-border-amber-muted:  var(--border-amber-muted);
+  --color-border-blue-muted:   var(--border-blue-muted);
 }
 
 html, body {

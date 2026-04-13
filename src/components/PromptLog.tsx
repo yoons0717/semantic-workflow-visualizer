@@ -1,17 +1,14 @@
 "use client";
 
 import { useWorkflowStore } from "@/store/workflowStore";
+import { EmptyState } from "@/components/EmptyState";
 
 export function PromptLog() {
   const promptLog = useWorkflowStore((s) => s.promptLog);
   const input = useWorkflowStore((s) => s.input);
 
   if (!promptLog) {
-    return (
-      <div className="h-full flex items-center justify-center font-mono text-[11px] tracking-[0.06em] text-text-dim">
-        — No log —
-      </div>
-    );
+    return <EmptyState>— No log —</EmptyState>;
   }
 
   let parsed: { system?: string } = {};
