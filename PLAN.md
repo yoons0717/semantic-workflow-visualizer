@@ -127,15 +127,15 @@ GROQ_API_KEY=gsk_...
 
 ### Task 11: 임베딩 API 연동
 
-- [ ] `src/app/api/embeddings/route.ts` (신규)
+- [x] `src/app/api/embeddings/route.ts` (신규)
   - module-level 캐시: `Map<string, number[]>` — 10개 knowledge item, cold start 1회 계산 후 재사용
   - POST `{ text: string }` → Jina `jina-embeddings-v3` 호출 → `Record<id, number>` 반환
   - `JINA_API_KEY` 없으면 `{}` 반환 (graceful degradation)
-- [ ] `src/lib/knowledge.ts` — `computeSimilarities` (Jaccard) 제거, 각 항목에 `description` 필드 추가, `vector` 필드 제거
-- [ ] `src/store/workflowStore.ts` — `similarities: Record<string, number>` 상태 + `setSimilarities` 액션 추가, `reset()`에 포함
-- [ ] `src/hooks/useAnalyze.ts` — `/api/analyze` 와 `/api/embeddings` 를 `Promise.allSettled` 로 병렬 실행, 결과 → `setSimilarities`
-- [ ] `src/components/VectorMap.tsx` — 클라이언트 Jaccard 제거, `store.similarities` 읽기, `similarities` 변경 시 D3 노드/링크 업데이트, fallback: 비어있으면 uniform 0.1
-- [ ] Vector Space 패널 배지 `"Jaccard Sim"` → `"Jina Embeddings"` 변경
+- [x] `src/lib/knowledge.ts` — `computeSimilarities` (Jaccard) 제거, 각 항목에 `description` 필드 추가, `vector`/`keywords` 필드 제거
+- [x] `src/store/workflowStore.ts` — `similarities: Record<string, number>` 상태 + `setSimilarities` 액션 추가, `reset()`에 포함
+- [x] `src/hooks/useAnalyze.ts` — `/api/analyze` 와 `/api/embeddings` 병렬 실행, 결과 → `setSimilarities`
+- [x] `src/components/VectorMap.tsx` — 클라이언트 Jaccard 제거, `store.similarities` 읽기, `similarities` 변경 시 D3 transition 600ms 업데이트, fallback: 비어있으면 uniform 0.1
+- [x] Vector Space 패널 배지 `"Cosine Similarity"` → `"Jina Embeddings"` 변경
 
 **환경 변수 추가:**
 ```

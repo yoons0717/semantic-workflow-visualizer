@@ -9,6 +9,7 @@ export function useAnalyze() {
   const clearStreamedText = useWorkflowStore((s) => s.clearStreamedText);
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
   const setTasks = useWorkflowStore((s) => s.setTasks);
+  const setSimilarities = useWorkflowStore((s) => s.setSimilarities);
 
   const analyze = useCallback(
     async (input: string) => {
@@ -17,6 +18,18 @@ export function useAnalyze() {
       setStage("analyzing");
 
       try {
+        // LLM 스트리밍과 임베딩 계산을 병렬 실행 — 한쪽 실패가 다른 쪽을 막지 않음
+        void fetch("/api/embeddings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data?.similarities) setSimilarities(data.similarities);
+          })
+          .catch(() => {});
+
         const res = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -67,7 +80,7 @@ export function useAnalyze() {
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks]
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities]
   );
 
   return { analyze };

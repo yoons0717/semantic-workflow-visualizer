@@ -139,7 +139,7 @@ export function ResizableLayout() {
       <Panel
         title="Vector Space"
         dotColor="var(--purple)"
-        badge="Cosine Similarity"
+        badge="Jina Embeddings"
         className="min-h-60"
       >
         <VectorMap />
