@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorBanner } from "@/components/ErrorBanner";
 
 export function StreamingPanel() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -35,6 +36,10 @@ export function StreamingPanel() {
   }, [streamedText]);
 
   const isStreaming = stage === "analyzing";
+
+  if (stage === "error") {
+    return <ErrorBanner />;
+  }
 
   return (
     <div

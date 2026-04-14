@@ -25,6 +25,9 @@ interface WorkflowStore {
   /** Jina AI 임베딩 기반 코사인 유사도. knowledge item id → 0~1 점수. VectorMap에서 소비. */
   similarities: Record<string, number>;
 
+  /** 분석 실패 시 사용자에게 표시할 에러 메시지. stage === 'error'일 때 ErrorBanner에서 소비. */
+  errorMessage: string | null;
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
   setInput: (input: string) => void;
@@ -37,6 +40,7 @@ interface WorkflowStore {
   setTasks: (tasks: WorkflowTask[]) => void;
   setPromptLog: (log: string) => void;
   setSimilarities: (similarities: Record<string, number>) => void;
+  setErrorMessage: (message: string | null) => void;
   /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
   reset: () => void;
 }
@@ -49,6 +53,7 @@ const initialState = {
   tasks: [],
   promptLog: '',
   similarities: {} as Record<string, number>,
+  errorMessage: null as string | null,
 };
 
 export const useWorkflowStore = create<WorkflowStore>((set) => ({
@@ -63,5 +68,6 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   setTasks: (tasks) => set({ tasks }),
   setPromptLog: (log) => set({ promptLog: log }),
   setSimilarities: (similarities) => set({ similarities }),
+  setErrorMessage: (message) => set({ errorMessage: message }),
   reset: () => set(initialState),
 }));

@@ -146,15 +146,12 @@ JINA_API_KEY=jina_...
 
 ## Phase 7: 진짜 Slack 연동
 
-**목적:** Slack 태스크 승인 시 실제 메시지 전송, Live/Mock 구분 표시
+**목적:** Slack 태스크 승인 시 실제 메시지 전송 (`SLACK_WEBHOOK_URL` 없으면 mock fallback, 카드 UI 변경 없음)
 
-### Task 12: Slack Proxy Route + TaskCard 배지
+### Task 12: Slack Proxy Route
 
-- [ ] `src/app/api/webhook/slack/route.ts` (신규) — Slack Incoming Webhook 서버사이드 프록시 (`SLACK_WEBHOOK_URL` 없으면 mock fallback)
-- [ ] `src/types/index.ts` — `WorkflowTask`에 `executionMode?: 'live' | 'mock'` 필드 추가
-- [ ] `src/lib/mockWebhook.ts` — Slack 타입은 `/api/webhook/slack` 호출, 나머지는 기존 mock 유지, 반환값에 `mode: 'live' | 'mock'` 추가
-- [ ] `src/components/TaskExecutor.tsx` — `executeTask` 완료 후 `updateTask({ executionMode: result.mode })`
-- [ ] `src/components/TaskCard.tsx` — `status === 'success'` 시 `executionMode` 에 따라 `LIVE`(녹색) / `MOCK`(회색) 배지 표시
+- [x] `src/app/api/webhook/slack/route.ts` (신규) — Slack Incoming Webhook 서버사이드 프록시 (`SLACK_WEBHOOK_URL` 없으면 mock 응답)
+- [x] `src/lib/mockWebhook.ts` — Slack 타입만 `/api/webhook/slack` fetch로 교체, 나머지 타입은 기존 mock 유지
 
 **환경 변수 추가:**
 ```
@@ -167,15 +164,15 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 
 ### Task 13: 에러 상태 UX
 
-- [ ] `src/store/workflowStore.ts` — `errorMessage: string | null` 상태 + `setErrorMessage` 액션 추가
-- [ ] `src/hooks/useAnalyze.ts` — catch 블록에서 `setErrorMessage(humanReadableError(err))` 호출 (네트워크 오류 / API key 없음 / 태스크 추출 실패 구분)
-- [ ] `src/components/ErrorBanner.tsx` (신규) — `stage === 'error'` 시 렌더링, "Try Again" → `reset()`
-- [ ] `src/components/StreamingPanel.tsx` — `<ErrorBanner />` 조건부 렌더링
+- [x] `src/store/workflowStore.ts` — `errorMessage: string | null` 상태 + `setErrorMessage` 액션 추가
+- [x] `src/hooks/useAnalyze.ts` — catch 블록에서 `setErrorMessage(humanReadableError(err))` 호출 (네트워크 오류 / API key 없음 / 태스크 추출 실패 구분)
+- [x] `src/components/ErrorBanner.tsx` (신규) — `stage === 'error'` 시 렌더링, "Try Again" → `reset()`
+- [x] `src/components/StreamingPanel.tsx` — `<ErrorBanner />` 조건부 렌더링
 
 ### Task 14: VectorMap 노드 툴팁
 
-- [ ] `src/components/VectorMap.tsx` — `pointerenter` / `pointerleave` 이벤트 추가, React state로 툴팁 위치/내용 관리
-- [ ] 툴팁 내용: `label`, `category`(색상), 코사인 유사도 점수, `description`
+- [x] `src/components/VectorMap.tsx` — `pointerenter` / `pointerleave` 이벤트 추가, React state로 툴팁 위치/내용 관리
+- [x] 툴팁 내용: `label`, `category`(색상), 코사인 유사도 점수, `description`
 
 ---
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { KNOWLEDGE_BASE, KnowledgeItem } from "@/lib/knowledge";
@@ -24,20 +24,29 @@ interface SimNode extends d3.SimulationNodeDatum {
   isInput: boolean;
   category?: KnowledgeItem["category"];
   similarity: number;
+  description?: string;
 }
 
 interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   similarity: number;
 }
 
-const getNodeColor  = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.category!] ?? "#6b7fa3";
-const getNodeRadius = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
+interface TooltipState {
+  x: number;
+  y: number;
+  node: SimNode;
+}
+
+const getNodeColor   = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.category!] ?? "#6b7fa3";
+const getNodeRadius  = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
 const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(12 + d.similarity * 10);
 
 export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
   const similarities = useWorkflowStore((s) => s.similarities);
 
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
   const initializedRef = useRef(false);
@@ -91,6 +100,7 @@ export function VectorMap() {
           isInput: false,
           category: item.category,
           similarity: getSim(item.id),
+          description: item.description,
         })),
       ];
 
@@ -131,7 +141,24 @@ export function VectorMap() {
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
         .data(nodes)
-        .join("g");
+        .join("g")
+        .on("pointerenter", (event: PointerEvent, d: SimNode) => {
+          if (d.isInput) return;
+          const container = containerRef.current;
+          if (!container) return;
+          const rect = container.getBoundingClientRect();
+          setTooltip({ x: event.clientX - rect.left, y: event.clientY - rect.top, node: d });
+        })
+        .on("pointermove", (event: PointerEvent, d: SimNode) => {
+          if (d.isInput) return;
+          const container = containerRef.current;
+          if (!container) return;
+          const rect = container.getBoundingClientRect();
+          setTooltip({ x: event.clientX - rect.left, y: event.clientY - rect.top, node: d });
+        })
+        .on("pointerleave", () => {
+          setTooltip(null);
+        });
 
       nodeSel
         .append("circle")
@@ -256,8 +283,38 @@ export function VectorMap() {
   }
 
   return (
-    <div className="h-full w-full relative">
+    <div ref={containerRef} className="h-full w-full relative">
       <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+      {tooltip && (
+        <div
+          className="absolute z-10 pointer-events-none px-2.5 py-2 rounded-[3px] bg-bg-raised border border-border flex flex-col gap-1 min-w-36 max-w-48"
+          style={{ left: tooltip.x + 12, top: tooltip.y - 8 }}
+        >
+          <div className="font-mono text-[10px] font-semibold text-text-pri leading-none">
+            {tooltip.node.label}
+          </div>
+          {tooltip.node.category && (
+            <span
+              className="font-mono text-[8px] uppercase tracking-[0.06em] px-1 py-0.5 rounded-xs border w-fit"
+              style={{
+                color: CATEGORY_COLOR[tooltip.node.category],
+                borderColor: `${CATEGORY_COLOR[tooltip.node.category]}40`,
+              }}
+            >
+              {tooltip.node.category}
+            </span>
+          )}
+          <div className="font-mono text-[9px] text-text-dim">
+            similarity:{" "}
+            <span className="text-accent">{tooltip.node.similarity.toFixed(3)}</span>
+          </div>
+          {tooltip.node.description && (
+            <div className="text-[9px] text-text-sec leading-[1.5] border-t border-border-dim pt-1 mt-0.5">
+              {tooltip.node.description}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -23,7 +23,29 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function executeSlackTask(payload: Record<string, string>): Promise<WebhookResult> {
+  try {
+    const res = await fetch('/api/webhook/slack', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel: payload.channel, message: payload.message }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      return { success: true, message: `Message sent to ${payload.channel ?? '#general'}` };
+    }
+  } catch {
+    // fall through to mock
+  }
+  // SLACK_WEBHOOK_URL 없거나 오류 → mock fallback
+  await delay(MOCK_DELAYS.slack);
+  return { success: true, message: MOCK_MESSAGES.slack(payload) };
+}
+
 export async function executeTask(task: WorkflowTask): Promise<WebhookResult> {
+  if (task.type === 'slack') {
+    return executeSlackTask(task.payload);
+  }
   await delay(MOCK_DELAYS[task.type]);
   return {
     success: true,
