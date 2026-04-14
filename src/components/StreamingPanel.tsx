@@ -6,7 +6,7 @@ import { useAnalyze } from "@/hooks/useAnalyze";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBanner } from "@/components/ErrorBanner";
 
-function renderLine(line: string, i: number) {
+export function renderLine(line: string, i: number) {
   const trimmed = line.trim();
 
   // **텍스트** 또는 **텍스트:** → 섹션 헤더
