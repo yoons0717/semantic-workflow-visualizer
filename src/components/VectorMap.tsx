@@ -137,28 +137,21 @@ export function VectorMap() {
         .attr("stroke", (d) => (d.similarity > 0.15 ? "#00d4a8" : "#1e2d45"))
         .attr("stroke-opacity", (d) => d.similarity >= LINK_THRESHOLD ? 0.3 + d.similarity * 0.7 : 0);
 
+      const handleHover = (event: PointerEvent, d: SimNode) => {
+        if (d.isInput) return;
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        setTooltip({ x: event.clientX - rect.left, y: event.clientY - rect.top, node: d });
+      };
+
       const nodeSel = g
         .append("g")
         .selectAll<SVGGElement, SimNode>("g")
         .data(nodes)
         .join("g")
-        .on("pointerenter", (event: PointerEvent, d: SimNode) => {
-          if (d.isInput) return;
-          const container = containerRef.current;
-          if (!container) return;
-          const rect = container.getBoundingClientRect();
-          setTooltip({ x: event.clientX - rect.left, y: event.clientY - rect.top, node: d });
-        })
-        .on("pointermove", (event: PointerEvent, d: SimNode) => {
-          if (d.isInput) return;
-          const container = containerRef.current;
-          if (!container) return;
-          const rect = container.getBoundingClientRect();
-          setTooltip({ x: event.clientX - rect.left, y: event.clientY - rect.top, node: d });
-        })
-        .on("pointerleave", () => {
-          setTooltip(null);
-        });
+        .on("pointerenter", handleHover)
+        .on("pointermove",  handleHover)
+        .on("pointerleave", () => setTooltip(null));
 
       nodeSel
         .append("circle")
@@ -276,7 +269,7 @@ export function VectorMap() {
     });
     observer.observe(svg);
     return () => observer.disconnect();
-  }, [stage]);
+  }, []);
 
   if (stage === "idle" || stage === "error") {
     return <EmptyState>— Activate after starting analysis —</EmptyState>;
