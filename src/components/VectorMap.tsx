@@ -60,7 +60,7 @@ export function VectorMap() {
   useEffect(() => {
     const svg = svgRef.current;
 
-    if (stage === "idle") {
+    if (stage === "idle" || stage === "error") {
       initializedRef.current = false;
       simRef.current?.stop();
       return;
@@ -278,7 +278,7 @@ export function VectorMap() {
     return () => observer.disconnect();
   }, [stage]);
 
-  if (stage === "idle") {
+  if (stage === "idle" || stage === "error") {
     return <EmptyState>— Activate after starting analysis —</EmptyState>;
   }
 
