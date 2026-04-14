@@ -78,13 +78,7 @@ export function useAnalyze() {
         if (process.env.NODE_ENV === "development") {
           console.error("[useAnalyze] 분석 요청 실패:", err);
         }
-        const msg =
-          err instanceof TypeError
-            ? "네트워크 연결을 확인해 주세요"
-            : err instanceof Error && err.message.includes("500")
-            ? "분석 API 키가 설정되지 않았습니다"
-            : "분석 중 오류가 발생했습니다";
-        setErrorMessage(msg);
+        setErrorMessage("분석 중 오류가 발생했습니다");
         setStage("error");
       }
     },
