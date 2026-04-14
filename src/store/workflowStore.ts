@@ -22,6 +22,9 @@ interface WorkflowStore {
   /** 실제 Groq에 전달된 system prompt + context 결합 문자열. 투명성 패널(PromptLog)에 표시. */
   promptLog: string;
 
+  /** Jina AI 임베딩 기반 코사인 유사도. knowledge item id → 0~1 점수. VectorMap에서 소비. */
+  similarities: Record<string, number>;
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
   setInput: (input: string) => void;
@@ -33,6 +36,7 @@ interface WorkflowStore {
   clearStreamedText: () => void;
   setTasks: (tasks: WorkflowTask[]) => void;
   setPromptLog: (log: string) => void;
+  setSimilarities: (similarities: Record<string, number>) => void;
   /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
   reset: () => void;
 }
@@ -44,6 +48,7 @@ const initialState = {
   streamedText: '',
   tasks: [],
   promptLog: '',
+  similarities: {} as Record<string, number>,
 };
 
 export const useWorkflowStore = create<WorkflowStore>((set) => ({
@@ -57,5 +62,6 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   clearStreamedText: () => set({ streamedText: '' }),
   setTasks: (tasks) => set({ tasks }),
   setPromptLog: (log) => set({ promptLog: log }),
+  setSimilarities: (similarities) => set({ similarities }),
   reset: () => set(initialState),
 }));

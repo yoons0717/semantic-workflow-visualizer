@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { KNOWLEDGE_BASE, KnowledgeItem, computeSimilarities } from "@/lib/knowledge";
+import { KNOWLEDGE_BASE, KnowledgeItem } from "@/lib/knowledge";
 import { EmptyState } from "@/components/EmptyState";
 
 const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
@@ -13,8 +13,10 @@ const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
   schedule:  "#8855ff",
 };
 
-// similarity < LINK_THRESHOLD인 연결은 시각적으로 의미가 없어 제거
+// similarity < LINK_THRESHOLD인 링크는 투명 처리
 const LINK_THRESHOLD = 0.05;
+// Jina API 없을 때 노드에 적용하는 기본 유사도
+const FALLBACK_SIMILARITY = 0.1;
 
 interface SimNode extends d3.SimulationNodeDatum {
   id: string;
@@ -30,16 +32,22 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 
 const getNodeColor  = (d: SimNode) => d.isInput ? "#e2e8f4" : CATEGORY_COLOR[d.category!] ?? "#6b7fa3";
 const getNodeRadius = (d: SimNode) => d.isInput ? 10 : 7 + d.similarity * 10;
-// 원이 클수록 레이블을 더 위로 띄워야 겹치지 않음
 const getLabelOffset = (d: SimNode) => d.isInput ? -14 : -(12 + d.similarity * 10);
 
 export function VectorMap() {
   const stage = useWorkflowStore((s) => s.stage);
+  const similarities = useWorkflowStore((s) => s.similarities);
+
   const svgRef = useRef<SVGSVGElement>(null);
   const simRef = useRef<d3.Simulation<SimNode, SimLink> | null>(null);
-  // tokenizing → analyzing 전환이 빠르게 일어날 때 이중 init을 막기 위한 플래그
   const initializedRef = useRef(false);
+  // 업데이트 effect에서 D3 selection을 조작하기 위한 refs
+  const nodeSelRef = useRef<d3.Selection<SVGGElement, SimNode, SVGGElement, unknown> | null>(null);
+  const linkSelRef = useRef<d3.Selection<SVGLineElement, SimLink, SVGGElement, unknown> | null>(null);
+  const nodesRef = useRef<SimNode[]>([]);
+  const linksRef = useRef<SimLink[]>([]);
 
+  // ── 시뮬레이션 초기화 ──────────────────────────────────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
 
@@ -51,13 +59,9 @@ export function VectorMap() {
 
     if (!svg) return;
 
-    // done/error에서 Reset 없이 재분석하는 경우도 여기서 플래그를 리셋
     if (stage === "tokenizing") initializedRef.current = false;
 
     if (initializedRef.current) return;
-
-    // 정상 경로: tokenizing에서 init
-    // 폴백 경로: tokenizing의 RAF가 취소된 채 analyzing으로 전환된 경우 여기서 재시도
     if (stage !== "tokenizing" && stage !== "analyzing") return;
 
     let raf: number;
@@ -72,10 +76,12 @@ export function VectorMap() {
       const cx = width / 2;
       const cy = height / 2;
 
-      // getState()로 읽는 이유: useEffect 클로저에서 최신 input을 보장하기 위해
-      const input = useWorkflowStore.getState().input;
-      const inputWords = input.toLowerCase().split(/[\s\W]+/).filter(Boolean);
-      const similarities = computeSimilarities(inputWords, KNOWLEDGE_BASE);
+      // 초기엔 fallback 유사도로 렌더링 — similarities 도착 시 update effect에서 갱신
+      const currentSims = useWorkflowStore.getState().similarities;
+      const getSim = (id: string) =>
+        Object.keys(currentSims).length > 0
+          ? (currentSims[id] ?? 0)
+          : FALLBACK_SIMILARITY;
 
       const nodes: SimNode[] = [
         { id: "__input__", label: "Input", isInput: true, similarity: 1, x: cx, y: cy },
@@ -84,14 +90,19 @@ export function VectorMap() {
           label: item.label,
           isInput: false,
           category: item.category,
-          similarity: similarities[item.id] ?? 0,
+          similarity: getSim(item.id),
         })),
       ];
 
-      const links: SimLink[] = KNOWLEDGE_BASE
-        .map((item) => ({ item, similarity: similarities[item.id] ?? 0 }))
-        .filter(({ similarity }) => similarity >= LINK_THRESHOLD)
-        .map(({ item, similarity }) => ({ source: "__input__", target: item.id, similarity }));
+      // 모든 링크 생성 (threshold 제외) — 유사도 낮은 링크는 opacity로 숨김
+      const links: SimLink[] = KNOWLEDGE_BASE.map((item) => ({
+        source: "__input__",
+        target: item.id,
+        similarity: getSim(item.id),
+      }));
+
+      nodesRef.current = nodes;
+      linksRef.current = links;
 
       const svgSel = d3.select(svg);
       svgSel.selectAll("*").remove();
@@ -114,7 +125,7 @@ export function VectorMap() {
         .join("line")
         .attr("stroke-width", (d) => Math.max(0.5, d.similarity * 4))
         .attr("stroke", (d) => (d.similarity > 0.15 ? "#00d4a8" : "#1e2d45"))
-        .attr("stroke-opacity", (d) => 0.3 + d.similarity * 0.7);
+        .attr("stroke-opacity", (d) => d.similarity >= LINK_THRESHOLD ? 0.3 + d.similarity * 0.7 : 0);
 
       const nodeSel = g
         .append("g")
@@ -140,6 +151,9 @@ export function VectorMap() {
         .attr("font-size", "9px")
         .attr("fill", getNodeColor)
         .attr("fill-opacity", (d) => (d.isInput ? 1 : 0.5 + d.similarity * 0.5));
+
+      linkSelRef.current = linkSel;
+      nodeSelRef.current = nodeSel;
 
       if (simRef.current) simRef.current.stop();
 
@@ -170,14 +184,56 @@ export function VectorMap() {
 
     init();
 
-    // 시뮬레이션은 여기서 중단하지 않음 — analyzing → done에서도 계속 실행돼야 함
-    // 중단은 stage === "idle" 분기에서만
     return () => {
       cancelAnimationFrame(raf);
     };
   }, [stage]);
 
-  // stage effect와 분리된 이유: stage 전환(tokenizing→analyzing→done) 중에도 끊기지 않게
+  // ── similarities 업데이트 — Jina 결과 도착 시 노드/링크 시각 속성 갱신 ──────
+  useEffect(() => {
+    if (Object.keys(similarities).length === 0) return;
+    if (!simRef.current || !nodeSelRef.current || !linkSelRef.current) return;
+
+    // 노드/링크 데이터 in-place 업데이트 → forceLink strength 함수가 다음 tick에 반영
+    nodesRef.current.forEach((node) => {
+      if (!node.isInput) {
+        node.similarity = similarities[node.id] ?? 0;
+      }
+    });
+    linksRef.current.forEach((link) => {
+      const targetId = typeof link.target === "object"
+        ? (link.target as SimNode).id
+        : (link.target as string);
+      link.similarity = similarities[targetId] ?? 0;
+    });
+
+    // 시각 속성 transition 업데이트
+    nodeSelRef.current
+      .select("circle")
+      .transition().duration(600)
+      .attr("r", getNodeRadius)
+      .attr("fill-opacity", (d) => (d.isInput ? 1 : 0.25 + d.similarity * 0.75))
+      .attr("stroke-opacity", (d) => (d.isInput ? 0.9 : 0.5 + d.similarity * 0.5));
+
+    nodeSelRef.current
+      .select("text")
+      .transition().duration(600)
+      .attr("dy", getLabelOffset)
+      .attr("fill-opacity", (d) => (d.isInput ? 1 : 0.5 + d.similarity * 0.5));
+
+    linkSelRef.current
+      .transition().duration(600)
+      .attr("stroke-width", (d) => Math.max(0.5, d.similarity * 4))
+      .attr("stroke", (d) => (d.similarity > 0.15 ? "#00d4a8" : "#1e2d45"))
+      .attr("stroke-opacity", (d) =>
+        d.similarity >= LINK_THRESHOLD ? 0.3 + d.similarity * 0.7 : 0
+      );
+
+    // 물리 시뮬레이션 gentle restart — 새 유사도 기반으로 재정렬
+    simRef.current.alpha(0.4).restart();
+  }, [similarities]);
+
+  // ── resize 감지 ────────────────────────────────────────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
@@ -187,7 +243,6 @@ export function VectorMap() {
       const { width, height } = entry.contentRect;
       if (width === 0 || height === 0) return;
       sim.force("center", d3.forceCenter(width / 2, height / 2));
-      // 시뮬레이션이 완전히 멈췄을 때만 재시동 (warm하면 다음 tick에 자동 반영)
       if (sim.alpha() <= sim.alphaMin()) {
         sim.alpha(0.15).restart();
       }
