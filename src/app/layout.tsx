@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed, JetBrains_Mono } from "next/font/google";
-import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const barlow = Barlow({
@@ -37,7 +36,7 @@ export default function RootLayout({
       className={`${barlow.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="font-sans text-[13px]">
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
