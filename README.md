@@ -183,10 +183,9 @@ Send a Slack alert to #ops, open a Jira bug ticket for the payment failure, emai
 
 | 문서 | 내용 |
 |---|---|
-| [docs/codebase.md](docs/codebase.md) | 디렉터리 구조, 핵심 모듈, API Routes, 확장 가이드 |
+| [docs/codebase.md](docs/codebase.md) | 디렉터리 구조, 핵심 모듈, API Routes, 확장 가이드, 현재 한계 |
 | [docs/development.md](docs/development.md) | 코드 컨벤션 |
 | [docs/testing.md](docs/testing.md) | 테스트 실행 및 구성 |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | 트러블슈팅, 현재 한계 |
 
 ---
 

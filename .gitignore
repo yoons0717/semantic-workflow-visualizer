@@ -42,7 +42,6 @@ next-env.d.ts
 .claude/
 
 # personal docs
-GUIDE.md
 AGENTS.md
 CLAUDE.md
 
