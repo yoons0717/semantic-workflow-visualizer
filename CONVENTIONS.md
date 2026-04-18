@@ -9,7 +9,7 @@ src/
 ├── store/         # Zustand 전역 상태
 ├── types/         # TypeScript 타입 (index.ts 단일 진입점)
 ├── lib/           # 순수 유틸 / 외부 클라이언트 래퍼
-└── hooks/         # TanStack Query 커스텀 훅
+└── hooks/         # 커스텀 훅 (useAnalyze 등)
 ```
 
 - 컴포넌트 파일: `PascalCase.tsx`
@@ -85,21 +85,25 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
 
 ---
 
-## 5. TanStack Query 훅
+## 5. 커스텀 훅
 
 ```ts
-// src/hooks/useTasks.ts
-export function useTasks() {
-  return useQuery({
-    queryKey: ['tasks'],
-    queryFn: () => fetch('/api/tasks').then(res => res.json()),
-  });
+// src/hooks/useAnalyze.ts
+export function useAnalyze() {
+  const store = useWorkflowStore();
+
+  const analyze = async (input: string) => {
+    store.setStage('analyzing');
+    // fetch 직접 호출 후 스토어에 저장
+  };
+
+  return { analyze };
 }
 ```
 
 - 훅 파일명: `use*.ts`
-- `queryKey` 는 배열 리터럴로 선언
-- 뮤테이션은 `useMutation` + `onSuccess`에서 쿼리 무효화
+- API 호출은 훅에서만 수행, 결과는 Zustand 스토어에 저장
+- 컴포넌트에서 직접 `fetch` 금지
 
 ---
 
