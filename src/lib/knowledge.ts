@@ -18,6 +18,13 @@ export const KNOWLEDGE_BASE: KnowledgeItem[] = [
   { id: "meeting-schedule", label: "Schedule Meeting",     category: "schedule",  description: "Schedule a meeting and send invites to attendees." },
 ];
 
+export const CATEGORY_COLOR: Record<KnowledgeItem["category"], string> = {
+  messaging: "#00d4a8",
+  task:      "#f5a623",
+  data:      "#4080f0",
+  schedule:  "#8855ff",
+};
+
 /** 두 벡터 간 코사인 유사도 */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) return 0;

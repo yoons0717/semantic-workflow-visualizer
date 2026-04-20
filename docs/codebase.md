@@ -34,7 +34,8 @@ src/
 │
 ├── hooks/
 │   ├── __tests__/
-│   └── useAnalyze.ts                 # 분석 전체 파이프라인 훅
+│   ├── useAnalyze.ts                 # 분석 전체 파이프라인 훅
+│   └── useVectorSimulation.ts        # D3 force simulation 로직 (VectorMap 전용)
 │
 ├── store/
 │   ├── __tests__/
@@ -137,13 +138,19 @@ await analyze(inputText);
 
 ### `components/VectorMap.tsx`
 
-D3 force simulation으로 워크플로우 노드와 입력 노드 간 유사도를 시각화합니다.
+`useVectorSimulation` 훅을 호출하고 SVG + 툴팁을 렌더링하는 얇은 컴포넌트입니다. D3 로직은 모두 훅에 위임합니다.
+
+- `idle`, `error` stage에서는 EmptyState 표시
+- 노드 hover 시 `NodeTooltip` 표시 (label, category, 유사도 점수, description)
+
+### `hooks/useVectorSimulation.ts`
+
+D3 force simulation 로직을 담당하는 훅입니다.
 
 - `analyzing` 단계 시작 시 초기화 (fallback 유사도 0.1)
 - `/api/embeddings` 결과 도착 시 노드 크기·링크 굵기·투명도를 600ms transition으로 갱신
 - 유사도 0.05 미만 링크는 투명 처리
-- `idle`, `error` stage에서는 EmptyState 표시
-- 노드 hover 시 툴팁 표시 (label, category, 유사도 점수, description). 입력 노드는 제외.
+- `SimNode`, `SimLink`, `TooltipState` 타입과 시각 속성 헬퍼 함수 export
 
 ---
 
@@ -252,7 +259,7 @@ Slack Incoming Webhook으로 메시지를 전송하는 서버사이드 프록시
 }
 ```
 
-새 카테고리라면 `VectorMap.tsx`의 `CATEGORY_COLOR` 맵도 함께 수정하세요.
+새 카테고리라면 `lib/knowledge.ts`의 `CATEGORY_COLOR` 맵도 함께 수정하세요.
 
 ---
 
