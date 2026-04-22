@@ -89,10 +89,7 @@ export function useAnalyze() {
         const tasks = await extractTasks(analysisText);
         setTasks(tasks);
         if (tasks.length === 0) setStage("done");
-      } catch (err) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("[useAnalyze] 분석 요청 실패:", err);
-        }
+      } catch {
         setErrorMessage("분석 중 오류가 발생했습니다");
         setStage("error");
       }
