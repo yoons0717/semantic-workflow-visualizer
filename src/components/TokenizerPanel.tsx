@@ -24,7 +24,7 @@ export function TokenizerPanel() {
   const setStage = useWorkflowStore((s) => s.setStage);
   const reset = useWorkflowStore((s) => s.reset);
 
-  const canAnalyze = input.trim().length > 0 && (ANALYZABLE_STAGES as readonly string[]).includes(stage);
+  const canAnalyze = input.trim().length > 0 && ANALYZABLE_STAGES.includes(stage as typeof ANALYZABLE_STAGES[number]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
