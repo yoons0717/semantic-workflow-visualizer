@@ -4,8 +4,7 @@ import { useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowTask } from "@/types";
 
-// ── API 헬퍼 ─────────────────────────────────────────────────────────────────
-
+// 입력 텍스트와 knowledge base 항목 간 코사인 유사도 반환
 async function fetchEmbeddings(
   input: string,
 ): Promise<Record<string, number>> {
@@ -18,6 +17,7 @@ async function fetchEmbeddings(
   return data?.similarities ?? {};
 }
 
+// LLM 분석 결과를 스트리밍으로 수신, 청크마다 onChunk 호출
 async function streamAnalysis(
   input: string,
   onChunk: (text: string) => void,
@@ -45,6 +45,7 @@ async function streamAnalysis(
   }
 }
 
+// 분석 텍스트에서 실행할 태스크 목록 추출
 async function extractTasks(analysisText: string): Promise<WorkflowTask[]> {
   const res = await fetch("/api/tasks", {
     method: "POST",
@@ -54,8 +55,6 @@ async function extractTasks(analysisText: string): Promise<WorkflowTask[]> {
   const raw = res.ok ? await res.json() : [];
   return Array.isArray(raw) ? raw : [];
 }
-
-// ── 훅 ───────────────────────────────────────────────────────────────────────
 
 export function useAnalyze() {
   const setStage = useWorkflowStore((s) => s.setStage);
