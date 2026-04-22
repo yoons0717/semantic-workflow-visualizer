@@ -2,6 +2,64 @@
 
 import { useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
+import type { WorkflowTask } from "@/types";
+
+// ── API 헬퍼 ─────────────────────────────────────────────────────────────────
+
+function fetchEmbeddingsAsync(
+  input: string,
+  onSuccess: (sims: Record<string, number>) => void,
+) {
+  void fetch("/api/embeddings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: input }),
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      if (data?.similarities) onSuccess(data.similarities);
+    })
+    .catch(() => {});
+}
+
+async function streamAnalysis(
+  input: string,
+  onChunk: (text: string) => void,
+  onPromptLog: (log: string) => void,
+) {
+  const res = await fetch("/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: [{ role: "user", content: input }] }),
+  });
+
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+  const promptLog = res.headers.get("x-prompt-log");
+  if (promptLog) onPromptLog(decodeURIComponent(promptLog));
+
+  if (!res.body) throw new Error("No response body");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    onChunk(decoder.decode(value, { stream: true }));
+  }
+}
+
+async function extractTasks(analysisText: string): Promise<WorkflowTask[]> {
+  const res = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ analysisText }),
+  });
+  const raw = res.ok ? await res.json() : [];
+  return Array.isArray(raw) ? raw : [];
+}
+
+// ── 훅 ───────────────────────────────────────────────────────────────────────
 
 export function useAnalyze() {
   const setStage = useWorkflowStore((s) => s.setStage);
@@ -19,61 +77,14 @@ export function useAnalyze() {
       setStage("analyzing");
 
       try {
-        // LLM 스트리밍과 임베딩 계산을 병렬 실행 — 한쪽 실패가 다른 쪽을 막지 않음
-        void fetch("/api/embeddings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: input }),
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            if (data?.similarities) setSimilarities(data.similarities);
-          })
-          .catch(() => {});
+        fetchEmbeddingsAsync(input, setSimilarities);
+        await streamAnalysis(input, appendStreamedText, setPromptLog);
 
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: input }],
-          }),
-        });
-
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-        const promptLog = res.headers.get("x-prompt-log");
-        if (promptLog) setPromptLog(decodeURIComponent(promptLog));
-
-        if (!res.body) throw new Error("No response body");
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          appendStreamedText(decoder.decode(value, { stream: true }));
-        }
-
-        // 스트리밍 완료 후 태스크 추출
         setStage("executing");
-        try {
-          const analysisText = useWorkflowStore.getState().streamedText;
-          const taskRes = await fetch("/api/tasks", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ analysisText }),
-          });
-          const raw = taskRes.ok ? await taskRes.json() : [];
-          const tasks = Array.isArray(raw) ? raw : [];
-          setTasks(tasks);
-          // setStage('done')은 TaskExecutor에서 모든 태스크 완료 시 호출.
-          // 태스크가 없으면 여기서 바로 done으로 전환.
-          if (tasks.length === 0) setStage("done");
-        } catch {
-          setTasks([]);
-          setStage("done");
-        }
+        const analysisText = useWorkflowStore.getState().streamedText;
+        const tasks = await extractTasks(analysisText);
+        setTasks(tasks);
+        if (tasks.length === 0) setStage("done");
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
           console.error("[useAnalyze] 분석 요청 실패:", err);
@@ -82,7 +93,7 @@ export function useAnalyze() {
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities, setErrorMessage]
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities, setErrorMessage],
   );
 
   return { analyze };
