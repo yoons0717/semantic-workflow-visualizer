@@ -295,21 +295,5 @@ export function useVectorSimulation(
     simRef.current.alpha(0.4).restart();
   }, [similarities]);
 
-  // ── resize 감지 ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const sim = simRef.current;
-      if (!sim) return;
-      const { width, height } = entry.contentRect;
-      if (width === 0 || height === 0) return;
-      sim.force("center", d3.forceCenter(width / 2, height / 2));
-      if (sim.alpha() <= sim.alphaMin()) sim.alpha(0.15).restart();
-    });
-    observer.observe(svg);
-    return () => observer.disconnect();
-  }, []);
-
   return { containerRef, svgRef, tooltip };
 }
