@@ -40,9 +40,12 @@ function NodeTooltip({ tooltip }: { tooltip: TooltipState }) {
 }
 
 export function VectorMap() {
-  const stage        = useWorkflowStore((s) => s.stage);
+  const stage = useWorkflowStore((s) => s.stage);
   const similarities = useWorkflowStore((s) => s.similarities);
-  const { containerRef, svgRef, tooltip } = useVectorSimulation(stage, similarities);
+  const { containerRef, svgRef, tooltip } = useVectorSimulation(
+    stage,
+    similarities,
+  );
 
   if (stage === "idle" || stage === "error") {
     return <EmptyState>— Activate after starting analysis —</EmptyState>;
@@ -50,7 +53,10 @@ export function VectorMap() {
 
   return (
     <div ref={containerRef} className="h-full w-full relative">
-      <svg ref={svgRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+      <svg
+        ref={svgRef}
+        className="w-full h-full cursor-grab active:cursor-grabbing"
+      />
       {tooltip && <NodeTooltip tooltip={tooltip} />}
     </div>
   );
