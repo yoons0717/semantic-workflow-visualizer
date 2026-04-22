@@ -13,6 +13,7 @@ async function fetchEmbeddings(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text: input }),
   });
+  if (!res.ok) return {};
   const data = await res.json();
   return data?.similarities ?? {};
 }
