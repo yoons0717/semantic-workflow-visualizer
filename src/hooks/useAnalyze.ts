@@ -6,20 +6,16 @@ import type { WorkflowTask } from "@/types";
 
 // ── API 헬퍼 ─────────────────────────────────────────────────────────────────
 
-function fetchEmbeddingsAsync(
+async function fetchEmbeddings(
   input: string,
-  onSuccess: (sims: Record<string, number>) => void,
-) {
-  void fetch("/api/embeddings", {
+): Promise<Record<string, number>> {
+  const res = await fetch("/api/embeddings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text: input }),
-  })
-    .then((r) => r.json())
-    .then((data) => {
-      if (data?.similarities) onSuccess(data.similarities);
-    })
-    .catch(() => {});
+  });
+  const data = await res.json();
+  return data?.similarities ?? {};
 }
 
 async function streamAnalysis(
@@ -50,17 +46,13 @@ async function streamAnalysis(
 }
 
 async function extractTasks(analysisText: string): Promise<WorkflowTask[]> {
-  try {
-    const res = await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ analysisText }),
-    });
-    const raw = res.ok ? await res.json() : [];
-    return Array.isArray(raw) ? raw : [];
-  } catch {
-    return [];
-  }
+  const res = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ analysisText }),
+  });
+  const raw = res.ok ? await res.json() : [];
+  return Array.isArray(raw) ? raw : [];
 }
 
 // ── 훅 ───────────────────────────────────────────────────────────────────────
@@ -80,18 +72,25 @@ export function useAnalyze() {
       setTasks([]);
       setStage("analyzing");
 
-      try {
-        fetchEmbeddingsAsync(input, setSimilarities);
-        await streamAnalysis(input, appendStreamedText, setPromptLog);
+      void fetchEmbeddings(input).then(setSimilarities).catch(() => {});
 
-        setStage("executing");
-        const analysisText = useWorkflowStore.getState().streamedText;
+      try {
+        await streamAnalysis(input, appendStreamedText, setPromptLog);
+      } catch {
+        setErrorMessage("분석 중 오류가 발생했습니다");
+        setStage("error");
+        return;
+      }
+
+      setStage("executing");
+      const analysisText = useWorkflowStore.getState().streamedText;
+      try {
         const tasks = await extractTasks(analysisText);
         setTasks(tasks);
         if (tasks.length === 0) setStage("done");
       } catch {
-        setErrorMessage("분석 중 오류가 발생했습니다");
-        setStage("error");
+        setTasks([]);
+        setStage("done");
       }
     },
     [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities, setErrorMessage],
