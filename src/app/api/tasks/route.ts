@@ -26,7 +26,7 @@ If there are no executable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
   if (!process.env.GROQ_API_KEY) {
-    return Response.json([]);
+    return Response.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     return Response.json(tasks);
   } catch {
-    return Response.json([]);
+    return Response.json({ error: "Failed to extract tasks" }, { status: 500 });
   }
 
 }

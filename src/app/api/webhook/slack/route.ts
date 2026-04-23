@@ -1,6 +1,6 @@
 export async function POST(req: Request) {
   if (!process.env.SLACK_WEBHOOK_URL) {
-    return Response.json({ ok: false });
+    return Response.json({ error: "SLACK_WEBHOOK_URL not configured" }, { status: 500 });
   }
 
   try {
@@ -12,6 +12,6 @@ export async function POST(req: Request) {
     });
     return Response.json({ ok: res.ok });
   } catch {
-    return Response.json({ ok: false });
+    return Response.json({ error: "Failed to send Slack message" }, { status: 500 });
   }
 }

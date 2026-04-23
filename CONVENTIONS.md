@@ -173,7 +173,22 @@ import { cosineSimilarity } from '@/lib/knowledge';
 
 ---
 
-## 10. 금지 사항
+## 10. 에러 처리
+
+### API Route
+- 에러 응답은 `Response.json({ error: "..." }, { status: 500 })` 형식으로 통일
+- 환경 변수 누락, catch 모두 동일 형식 사용
+
+### 클라이언트 fetch 헬퍼
+- `!res.ok` 시 `throw new Error(...)` — 호출부 catch에서 일관되게 처리
+
+### 훅 에러 핸들링
+- **치명적 에러** (분석·태스크 추출 실패): `setStage("error")` + `setErrorMessage(...)`
+- **비치명적 에러** (임베딩 등 부가 기능): `.catch(() => {})` fire-and-forget 허용
+
+---
+
+## 11. 금지 사항
 
 - `console.log` 운영 코드에 잔류 금지 (디버그 후 제거)
 - `any` 타입 금지
