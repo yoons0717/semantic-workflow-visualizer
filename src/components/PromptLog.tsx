@@ -3,25 +3,18 @@
 import { useWorkflowStore } from "@/store/workflowStore";
 import { EmptyState } from "@/components/EmptyState";
 
-export function PromptLog() {
-  const promptLog = useWorkflowStore((s) => s.promptLog);
+function PromptLogContent({ promptLog }: { promptLog: string }) {
   const input = useWorkflowStore((s) => s.input);
-
-  if (!promptLog) {
-    return <EmptyState>— No log —</EmptyState>;
-  }
 
   let parsed: { system?: string } = {};
   try {
     parsed = JSON.parse(promptLog);
   } catch {
-    // 파싱 실패 시 raw 텍스트로 표시
     parsed = { system: promptLog };
   }
 
   return (
     <div className="h-full overflow-y-auto font-mono text-[10px] leading-[1.6] space-y-2.5">
-      {/* SYSTEM 섹션 */}
       {parsed.system && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-1">
@@ -32,8 +25,6 @@ export function PromptLog() {
           </pre>
         </div>
       )}
-
-      {/* USER 섹션 — 분석이 시작된 경우 입력값 표시 */}
       {input.trim() && (
         <div>
           <div className="text-[8px] tracking-[0.12em] uppercase text-text-dim mb-1">
@@ -46,4 +37,10 @@ export function PromptLog() {
       )}
     </div>
   );
+}
+
+export function PromptLog() {
+  const promptLog = useWorkflowStore((s) => s.promptLog);
+  if (!promptLog) return <EmptyState>— No log —</EmptyState>;
+  return <PromptLogContent promptLog={promptLog} />;
 }
