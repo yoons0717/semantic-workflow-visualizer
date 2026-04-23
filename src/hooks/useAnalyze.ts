@@ -53,7 +53,8 @@ async function extractTasks(analysisText: string): Promise<WorkflowTask[]> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ analysisText }),
   });
-  const raw = res.ok ? await res.json() : [];
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  const raw = await res.json();
   return Array.isArray(raw) ? raw : [];
 }
 
@@ -89,8 +90,8 @@ export function useAnalyze() {
         setTasks(tasks);
         if (tasks.length === 0) setStage("done");
       } catch {
-        setTasks([]);
-        setStage("done");
+        setErrorMessage("태스크 추출 중 오류가 발생했습니다");
+        setStage("error");
       }
     },
     [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities, setErrorMessage],

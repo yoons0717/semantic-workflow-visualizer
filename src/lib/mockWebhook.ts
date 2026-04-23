@@ -30,9 +30,11 @@ async function executeSlackTask(payload: Record<string, string>): Promise<Webhoo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ channel: payload.channel, message: payload.message }),
     });
-    const data = await res.json();
-    if (data.ok) {
-      return { success: true, message: `Message sent to ${payload.channel ?? '#general'}` };
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok) {
+        return { success: true, message: `Message sent to ${payload.channel ?? '#general'}` };
+      }
     }
   } catch {
     // fall through to mock

@@ -24,7 +24,7 @@ async function fetchEmbeddings(texts: string[]): Promise<number[][]> {
 
 export async function POST(req: Request) {
   if (!process.env.JINA_API_KEY) {
-    return Response.json({ similarities: {} });
+    return Response.json({ error: "JINA_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -54,6 +54,6 @@ export async function POST(req: Request) {
 
     return Response.json({ similarities });
   } catch {
-    return Response.json({ similarities: {} });
+    return Response.json({ error: "Failed to compute embeddings" }, { status: 500 });
   }
 }

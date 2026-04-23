@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   // 스트림 시작 전에 API 키 유무를 확인해 클라이언트가 res.ok로 에러를 감지할 수 있게 함.
   // AI SDK는 에러가 생겨도 HTTP 200으로 스트림을 시작하기 때문에 여기서 먼저 체크해야 한다.
   if (!process.env.GROQ_API_KEY) {
-    return new Response(null, { status: 500 });
+    return Response.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -26,6 +26,6 @@ export async function POST(req: Request) {
       },
     });
   } catch {
-    return new Response(null, { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

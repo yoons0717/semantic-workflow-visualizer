@@ -156,7 +156,7 @@ describe('useAnalyze - 정상 플로우', () => {
 });
 
 describe('useAnalyze - 태스크 추출 엣지케이스', () => {
-  it('/api/tasks 실패 시 tasks는 빈 배열, stage는 done으로 처리된다', async () => {
+  it('/api/tasks 실패 시 tasks는 빈 배열, stage는 error로 처리된다', async () => {
     fetchMock.mockImplementation((url: string) => {
       if (url === '/api/embeddings') return Promise.resolve({ json: () => Promise.resolve({}) });
       if (url === '/api/analyze') return Promise.resolve({
@@ -175,7 +175,8 @@ describe('useAnalyze - 태스크 추출 엣지케이스', () => {
 
     const state = useWorkflowStore.getState();
     expect(state.tasks).toEqual([]);
-    expect(state.stage).toBe('done');
+    expect(state.stage).toBe('error');
+    expect(state.errorMessage).toBe('태스크 추출 중 오류가 발생했습니다');
   });
 
   it('/api/tasks 응답이 배열이 아니면 빈 배열로 처리된다', async () => {
