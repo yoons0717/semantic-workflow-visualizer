@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { tokenizeText } from "@/lib/tokenizer";
 import { Spinner } from "@/components/Spinner";
+import type { PipelineStage } from "@/types";
 
-const ANALYZABLE_STAGES = ["idle", "done", "error"] as const;
+const ANALYZABLE_STAGES: readonly PipelineStage[] = ["idle", "done", "error"];
 
 const TOKEN_CHIP_CLASSES = [
   "tok-chip-0",
@@ -24,7 +25,7 @@ export function TokenizerPanel() {
   const setStage = useWorkflowStore((s) => s.setStage);
   const reset = useWorkflowStore((s) => s.reset);
 
-  const canAnalyze = input.trim().length > 0 && (ANALYZABLE_STAGES as readonly string[]).includes(stage);
+  const canAnalyze = input.trim().length > 0 && ANALYZABLE_STAGES.includes(stage);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

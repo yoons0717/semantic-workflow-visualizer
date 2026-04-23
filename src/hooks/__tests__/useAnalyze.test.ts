@@ -31,6 +31,7 @@ function mockFetch(
   fetchMock.mockImplementation((url: string) => {
     if (url === '/api/embeddings') {
       return Promise.resolve({
+        ok: true,
         json: () => Promise.resolve(
           Object.keys(similarities).length > 0 ? { similarities } : {}
         ),
