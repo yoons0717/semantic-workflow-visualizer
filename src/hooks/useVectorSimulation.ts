@@ -27,12 +27,6 @@ export interface TooltipState {
   node: SimNode;
 }
 
-// ── 타입 가드 ─────────────────────────────────────────────────────────────────
-
-function isSimNode(n: string | number | SimNode | null | undefined): n is SimNode {
-  return typeof n === "object" && n !== null;
-}
-
 // ── 상수 ──────────────────────────────────────────────────────────────────────
 
 const LINK_THRESHOLD = 0.05;
@@ -243,10 +237,10 @@ export function useVectorSimulation(
         )
         .on("tick", () => {
           linkSel
-            .attr("x1", (d) => (isSimNode(d.source) ? d.source.x : 0) ?? 0)
-            .attr("y1", (d) => (isSimNode(d.source) ? d.source.y : 0) ?? 0)
-            .attr("x2", (d) => (isSimNode(d.target) ? d.target.x : 0) ?? 0)
-            .attr("y2", (d) => (isSimNode(d.target) ? d.target.y : 0) ?? 0);
+            .attr("x1", (d) => (d.source as SimNode).x ?? 0)
+            .attr("y1", (d) => (d.source as SimNode).y ?? 0)
+            .attr("x2", (d) => (d.target as SimNode).x ?? 0)
+            .attr("y2", (d) => (d.target as SimNode).y ?? 0);
           nodeSel.attr(
             "transform",
             (d) => `translate(${d.x ?? 0},${d.y ?? 0})`,
@@ -269,7 +263,10 @@ export function useVectorSimulation(
       if (!node.isInput) node.similarity = similarities[node.id] ?? 0;
     });
     linksRef.current.forEach((link) => {
-      const targetId = isSimNode(link.target) ? link.target.id : String(link.target);
+      const targetId =
+        typeof link.target === "object"
+          ? (link.target as SimNode).id
+          : (link.target as string);
       link.similarity = similarities[targetId] ?? 0;
     });
 
