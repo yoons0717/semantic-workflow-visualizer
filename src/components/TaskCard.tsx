@@ -14,6 +14,7 @@ const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
   jira:    "text-[#a78bfa] border-[#a78bfa]/25",
   email:   "text-swv-amber border-swv-amber/25",
   generic: "text-text-sec border-border",
+  notion:  "text-[#e06c75] border-[#e06c75]/25",
 };
 
 const STATUS_CONFIG: Record<
