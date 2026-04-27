@@ -1,32 +1,41 @@
 import { create } from 'zustand';
-import type { PipelineStage, Token, WorkflowTask } from '@/types';
+import type { PipelineStage, Token, WorkflowTask, NotionDatabase, SavedWorkflow } from '@/types';
 
 interface WorkflowStore {
   // ── State ──────────────────────────────────────────────────────────────────
 
-  /** 사용자가 입력한 원문 텍스트. TokenizerPanel과 Groq 분석 요청의 원본 소스. */
+  /** 사용자가 입력한 원문 텍스트. */
   input: string;
 
-  /** 입력 텍스트를 토큰화한 결과 배열. 각 토큰은 ID, 텍스트, 색상 인덱스를 포함. */
+  /** 입력 텍스트를 토큰화한 결과 배열. */
   tokens: Token[];
 
-  /** 현재 파이프라인 단계. UI 전반(Pipeline Bar, 패널 상태)의 표시 기준. */
+  /** 현재 파이프라인 단계. */
   stage: PipelineStage;
 
-  /** Groq SSE 스트림으로 수신된 텍스트 누적값. 청크 단위로 append되어 실시간 렌더링에 사용. */
+  /** SSE 스트림으로 수신된 텍스트 누적값. */
   streamedText: string;
 
-  /** Groq structured output으로 추출된 실행 태스크 목록. TaskCard / TaskExecutor에서 소비. */
+  /** 추출된 실행 태스크 목록. TaskCard / TaskExecutor에서 소비. */
   tasks: WorkflowTask[];
 
-  /** 실제 Groq에 전달된 system prompt + context 결합 문자열. 투명성 패널(PromptLog)에 표시. */
+  /** 실제 LLM에 전달된 system prompt. PromptLog에 표시. */
   promptLog: string;
 
-  /** Jina AI 임베딩 기반 코사인 유사도. knowledge item id → 0~1 점수. VectorMap에서 소비. */
-  similarities: Record<string, number>;
-
-  /** 분석 실패 시 사용자에게 표시할 에러 메시지. stage === 'error'일 때 ErrorBanner에서 소비. */
+  /** 에러 메시지. stage === 'error'일 때 ErrorBanner에서 소비. */
   errorMessage: string | null;
+
+  /** Notion 워크스페이스에서 선택된 대상 DB ID. */
+  notionTargetDatabaseId: string | null;
+
+  /** 연결된 Notion DB 목록. NotionBrowser에서 소비. */
+  notionDatabases: NotionDatabase[];
+
+  /** localStorage에 저장된 워크플로우 목록. */
+  savedWorkflows: SavedWorkflow[];
+
+  /** 헤더에 입력된 GitHub 레포 (owner/repo 형식). */
+  githubRepo: string;
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -39,8 +48,11 @@ interface WorkflowStore {
   clearStreamedText: () => void;
   setTasks: (tasks: WorkflowTask[]) => void;
   setPromptLog: (log: string) => void;
-  setSimilarities: (similarities: Record<string, number>) => void;
   setErrorMessage: (message: string | null) => void;
+  setNotionTargetDatabaseId: (id: string | null) => void;
+  setNotionDatabases: (dbs: NotionDatabase[]) => void;
+  setSavedWorkflows: (workflows: SavedWorkflow[]) => void;
+  setGithubRepo: (repo: string) => void;
   /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
   reset: () => void;
 }
@@ -52,8 +64,11 @@ const initialState = {
   streamedText: '',
   tasks: [],
   promptLog: '',
-  similarities: {} as Record<string, number>,
   errorMessage: null as string | null,
+  notionTargetDatabaseId: null as string | null,
+  notionDatabases: [] as NotionDatabase[],
+  savedWorkflows: [] as SavedWorkflow[],
+  githubRepo: '',
 };
 
 export const useWorkflowStore = create<WorkflowStore>((set) => ({
@@ -67,7 +82,10 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   clearStreamedText: () => set({ streamedText: '' }),
   setTasks: (tasks) => set({ tasks }),
   setPromptLog: (log) => set({ promptLog: log }),
-  setSimilarities: (similarities) => set({ similarities }),
   setErrorMessage: (message) => set({ errorMessage: message }),
+  setNotionTargetDatabaseId: (id) => set({ notionTargetDatabaseId: id }),
+  setNotionDatabases: (dbs) => set({ notionDatabases: dbs }),
+  setSavedWorkflows: (workflows) => set({ savedWorkflows: workflows }),
+  setGithubRepo: (repo) => set({ githubRepo: repo }),
   reset: () => set(initialState),
 }));
