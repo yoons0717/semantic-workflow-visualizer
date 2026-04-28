@@ -100,7 +100,11 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
 
       {/* Payload */}
       <div className="flex flex-col gap-1.25 mt-1">
-        {Object.entries(payload).map(([key, value]) => (
+        {Object.entries(payload).filter(([key]) => {
+          if (key === 'database_id') return false;
+          if (task.type === 'notion' && (key === 'status' || key === 'priority')) return false;
+          return true;
+        }).map(([key, value]) => (
           <div key={key} className="flex flex-col gap-0.5">
             <span className="font-mono text-[8px] tracking-[0.06em] text-text-dim uppercase">
               {key}
