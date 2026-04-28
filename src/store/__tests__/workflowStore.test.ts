@@ -29,7 +29,6 @@ describe('reset', () => {
     store.setStage('error');
     store.appendStreamedText('partial stream');
     store.setErrorMessage('분석 중 오류가 발생했습니다');
-    store.setNotionTargetDatabaseId('db-123');
     store.setGithubRepo('owner/repo');
 
     store.reset();
@@ -40,7 +39,6 @@ describe('reset', () => {
     expect(state.streamedText).toBe('');
     expect(state.errorMessage).toBeNull();
     expect(state.tasks).toEqual([]);
-    expect(state.notionTargetDatabaseId).toBeNull();
     expect(state.githubRepo).toBe('');
   });
 

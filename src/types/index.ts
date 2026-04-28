@@ -24,12 +24,3 @@ export interface NotionDatabase {
   icon?: string;
 }
 
-export interface SavedWorkflow {
-  id: string;
-  name: string;
-  prompt: string;
-  githubRepo?: string;
-  createdAt: number;
-  lastRunAt?: number;
-  runCount: number;
-}
