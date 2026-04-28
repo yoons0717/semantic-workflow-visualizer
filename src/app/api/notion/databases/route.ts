@@ -12,7 +12,7 @@ export async function GET() {
     });
 
     const databases = res.results
-      .filter((r) => r.object === 'database' || (r.object as string) === 'data_source')
+      .filter((r) => (r.object as string) === 'database' || (r.object as string) === 'data_source')
       .map((db) => {
         const title =
           'title' in db && Array.isArray(db.title) && db.title[0]?.plain_text
