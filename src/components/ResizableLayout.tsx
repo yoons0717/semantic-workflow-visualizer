@@ -6,6 +6,7 @@ import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
 import { PromptLog } from "@/components/PromptLog";
 import { TaskExecutor } from "@/components/TaskExecutor";
+import { NotionBrowser } from "@/components/NotionBrowser";
 
 interface LayoutSizes {
   col1: number;
@@ -134,13 +135,13 @@ export function ResizableLayout() {
       {/* VERTICAL HANDLE — col2 | col3 */}
       <DragHandle direction="col" onPointerDown={(e) => handlePointerDown("col3", e)} />
 
-      {/* COL 3, ROW 1 — Notion Browser (placeholder) */}
+      {/* COL 3, ROW 1 — Notion Browser */}
       <Panel
         title="Notion Workspace"
         dotColor="var(--purple)"
         className="min-h-60"
       >
-        <div />
+        <NotionBrowser />
       </Panel>
 
       {/* HORIZONTAL HANDLE — row1 | row2 */}
