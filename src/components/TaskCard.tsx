@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { WorkflowTask } from "@/types";
+import { useWorkflowStore } from "@/store/workflowStore";
 
 interface TaskCardProps {
   task: WorkflowTask;
@@ -31,6 +32,8 @@ const STATUS_CONFIG: Record<
 
 export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
   const [payload, setPayload] = useState<Record<string, string>>(task.payload);
+  const [selectedDbId, setSelectedDbId] = useState<string>("");
+  const notionDatabases = useWorkflowStore((s) => s.notionDatabases);
 
   const isTerminal = ["rejected", "running", "success", "failed"].includes(task.status);
   const statusCfg = STATUS_CONFIG[task.status];
@@ -74,6 +77,27 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
         {task.description}
       </div>
 
+      {/* Notion DB selector */}
+      {task.type === "notion" && task.status === "pending" && (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-mono text-[8px] tracking-[0.06em] text-text-dim uppercase">
+            Target Database
+          </span>
+          <select
+            value={selectedDbId}
+            onChange={(e) => setSelectedDbId(e.target.value)}
+            className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] appearance-none"
+          >
+            <option value="">— select database —</option>
+            {notionDatabases.map((db) => (
+              <option key={db.id} value={db.id}>
+                {db.icon ? `${db.icon} ` : ""}{db.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Payload */}
       <div className="flex flex-col gap-1.25 mt-1">
         {Object.entries(payload).map(([key, value]) => (
@@ -96,8 +120,9 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
       {task.status === "pending" && (
         <div className="flex gap-2 mt-1 pt-2 border-t border-border-dim">
           <button
-            onClick={() => onApprove(payload)}
-            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-accent/25 hover:bg-accent/10 transition-colors"
+            onClick={() => onApprove(task.type === "notion" ? { ...payload, database_id: selectedDbId } : payload)}
+            disabled={task.type === "notion" && !selectedDbId}
+            className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-accent/25 hover:bg-accent/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Approve
           </button>
@@ -112,7 +137,18 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
 
       {statusCfg.footer && (
         <div className={`mt-1 pt-2 border-t border-border-dim font-mono text-[9px] tracking-[0.05em] ${statusCfg.className}`}>
-          {statusCfg.footer}
+          {task.notionPageUrl ? (
+            <a
+              href={task.notionPageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:underline"
+            >
+              ↗ Open in Notion
+            </a>
+          ) : (
+            statusCfg.footer
+          )}
         </div>
       )}
     </div>

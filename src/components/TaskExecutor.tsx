@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { executeTask } from "@/lib/mockWebhook";
 import { TaskCard } from "@/components/TaskCard";
@@ -15,6 +15,18 @@ export function TaskExecutor() {
   const stage = useWorkflowStore((s) => s.stage);
   const setTasks = useWorkflowStore((s) => s.setTasks);
   const setStage = useWorkflowStore((s) => s.setStage);
+  const notionDatabases = useWorkflowStore((s) => s.notionDatabases);
+  const setNotionDatabases = useWorkflowStore((s) => s.setNotionDatabases);
+
+  useEffect(() => {
+    const hasNotionTask = tasks.some((t) => t.type === "notion");
+    if (hasNotionTask && notionDatabases.length === 0) {
+      fetch("/api/notion/databases")
+        .then((r) => r.json())
+        .then((data) => { if (Array.isArray(data)) setNotionDatabases(data); })
+        .catch(() => {});
+    }
+  }, [tasks, notionDatabases.length, setNotionDatabases]);
 
   const updateTask = useCallback(
     (id: string, patch: Partial<WorkflowTask>) => {
@@ -41,7 +53,10 @@ export function TaskExecutor() {
 
       try {
         const result = await executeTask(taskWithPayload);
-        updateTask(taskId, { status: result.success ? "success" : "failed" });
+        updateTask(taskId, {
+          status: result.success ? "success" : "failed",
+          ...(result.notionPageUrl ? { notionPageUrl: result.notionPageUrl } : {}),
+        });
       } catch {
         updateTask(taskId, { status: "failed" });
       } finally {
