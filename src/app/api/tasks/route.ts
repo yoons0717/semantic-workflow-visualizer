@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 import { z } from 'zod';
-import { anthropic, CLAUDE_MODEL } from '@/lib/claude';
+import { groqProvider, GROQ_MODEL } from '@/lib/groq';
 import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
 const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
@@ -27,8 +27,8 @@ Return ONLY this JSON structure, no other text:
 If there are no executable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
+  if (!process.env.GROQ_API_KEY) {
+    return Response.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -39,9 +39,12 @@ export async function POST(req: Request) {
     }
 
     const { text } = await generateText({
-      model: anthropic(CLAUDE_MODEL),
+      model: groqProvider(GROQ_MODEL),
       system: TASK_EXTRACTION_PROMPT,
       messages: [{ role: 'user', content: analysisText }],
+      providerOptions: {
+        groq: { response_format: { type: 'json_object' } },
+      },
     });
 
     const raw = JSON.parse(text);

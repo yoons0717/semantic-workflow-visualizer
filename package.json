@@ -11,7 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.71",
+    "@ai-sdk/groq": "^3.0.35",
     "@notionhq/client": "^5.20.0",
     "ai": "^6.0.153",
     "gpt-tokenizer": "^3.4.0",
