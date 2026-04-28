@@ -1,5 +1,13 @@
 import { Client } from '@notionhq/client';
 
+interface NotionDataSourceResult {
+  id: string;
+  object: string;
+  title?: Array<{ plain_text: string }>;
+  icon?: { type: string; emoji?: string };
+  parent?: { type: string; database_id?: string };
+}
+
 export async function GET() {
   if (!process.env.NOTION_API_KEY) {
     return Response.json({ error: 'NOTION_API_KEY not configured' }, { status: 500 });
@@ -12,17 +20,11 @@ export async function GET() {
       sort: { direction: 'descending', timestamp: 'last_edited_time' },
     });
 
-    const databases = res.results
+    const databases = (res.results as NotionDataSourceResult[])
       .map((db) => {
-        const title =
-          'title' in db && Array.isArray(db.title) && db.title[0]?.plain_text
-            ? db.title[0].plain_text
-            : 'Untitled';
-        const icon =
-          'icon' in db && db.icon?.type === 'emoji' ? db.icon.emoji : undefined;
-        const parent = 'parent' in db ? db.parent : undefined;
-        const actualId =
-          parent && 'database_id' in parent ? parent.database_id : db.id;
+        const title = db.title?.[0]?.plain_text ?? 'Untitled';
+        const icon = db.icon?.type === 'emoji' ? db.icon.emoji : undefined;
+        const actualId = db.parent?.database_id ?? db.id;
         return { id: actualId, title, icon };
       });
 
