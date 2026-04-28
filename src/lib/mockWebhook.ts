@@ -10,6 +10,7 @@ const MOCK_DELAYS: Record<WorkflowTask['type'], number> = {
   jira: 1200,
   email: 800,
   generic: 500,
+  notion: 900,
 };
 
 const MOCK_MESSAGES: Record<WorkflowTask['type'], (payload: Record<string, string>) => string> = {
@@ -17,6 +18,7 @@ const MOCK_MESSAGES: Record<WorkflowTask['type'], (payload: Record<string, strin
   jira: (p) => `Ticket created: ${p.project ?? 'PROJ'}-${Math.floor(Math.random() * 900) + 100}`,
   email: (p) => `Email delivered to ${p.to ?? 'recipient'}`,
   generic: () => 'Task executed successfully',
+  notion: (p) => `Created in Notion: ${p.title ?? 'Untitled'}`,
 };
 
 function delay(ms: number): Promise<void> {

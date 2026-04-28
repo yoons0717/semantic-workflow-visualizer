@@ -4,20 +4,6 @@ import { useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowTask } from "@/types";
 
-// 입력 텍스트와 knowledge base 항목 간 코사인 유사도 반환
-async function fetchEmbeddings(
-  input: string,
-): Promise<Record<string, number>> {
-  const res = await fetch("/api/embeddings", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: input }),
-  });
-  if (!res.ok) return {};
-  const data = await res.json();
-  return data?.similarities ?? {};
-}
-
 // LLM 분석 결과를 스트리밍으로 수신, 청크마다 onChunk 호출
 async function streamAnalysis(
   input: string,
@@ -64,7 +50,6 @@ export function useAnalyze() {
   const clearStreamedText = useWorkflowStore((s) => s.clearStreamedText);
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
   const setTasks = useWorkflowStore((s) => s.setTasks);
-  const setSimilarities = useWorkflowStore((s) => s.setSimilarities);
   const setErrorMessage = useWorkflowStore((s) => s.setErrorMessage);
 
   const analyze = useCallback(
@@ -72,8 +57,6 @@ export function useAnalyze() {
       clearStreamedText();
       setTasks([]);
       setStage("analyzing");
-
-      void fetchEmbeddings(input).then(setSimilarities).catch(() => {});
 
       try {
         await streamAnalysis(input, appendStreamedText, setPromptLog);
@@ -94,7 +77,7 @@ export function useAnalyze() {
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setSimilarities, setErrorMessage],
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setErrorMessage],
   );
 
   return { analyze };

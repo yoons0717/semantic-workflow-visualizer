@@ -11,12 +11,14 @@ Type selection rules:
 - "slack": sending messages, notifications, alerts to a channel or user
 - "jira": creating tickets, issues, tasks in a project tracker
 - "email": sending emails
+- "notion": creating entries or documents in Notion (issues, tasks, notes, reports)
 - "generic": everything else
 
 Payload keys by type:
 - slack: { "channel": "...", "message": "..." }
 - jira: { "project": "...", "summary": "...", "type": "Bug|Task|Story" }
 - email: { "to": "...", "subject": "...", "body": "..." }
+- notion: { "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }
 - generic: { "action": "..." }
 
 Return ONLY this JSON structure, no other text:
@@ -52,5 +54,4 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Failed to extract tasks" }, { status: 500 });
   }
-
 }
