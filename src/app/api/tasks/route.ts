@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 import { z } from 'zod';
-import { groqProvider, GROQ_MODEL } from '@/lib/groq';
+import { anthropic, CLAUDE_MODEL } from '@/lib/claude';
 import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
 const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
@@ -11,12 +11,14 @@ Type selection rules:
 - "slack": sending messages, notifications, alerts to a channel or user
 - "jira": creating tickets, issues, tasks in a project tracker
 - "email": sending emails
+- "notion": creating entries or documents in Notion (issues, tasks, notes, reports)
 - "generic": everything else
 
 Payload keys by type:
 - slack: { "channel": "...", "message": "..." }
 - jira: { "project": "...", "summary": "...", "type": "Bug|Task|Story" }
 - email: { "to": "...", "subject": "...", "body": "..." }
+- notion: { "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }
 - generic: { "action": "..." }
 
 Return ONLY this JSON structure, no other text:
@@ -25,8 +27,8 @@ Return ONLY this JSON structure, no other text:
 If there are no executable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
-  if (!process.env.GROQ_API_KEY) {
-    return Response.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -37,12 +39,9 @@ export async function POST(req: Request) {
     }
 
     const { text } = await generateText({
-      model: groqProvider(GROQ_MODEL),
+      model: anthropic(CLAUDE_MODEL),
       system: TASK_EXTRACTION_PROMPT,
       messages: [{ role: 'user', content: analysisText }],
-      providerOptions: {
-        groq: { response_format: { type: 'json_object' } },
-      },
     });
 
     const raw = JSON.parse(text);
@@ -52,5 +51,4 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Failed to extract tasks" }, { status: 500 });
   }
-
 }

@@ -1,8 +1,8 @@
-import { createGroq } from '@ai-sdk/groq';
+import { createAnthropic } from '@ai-sdk/anthropic';
 
-export const groqProvider = createGroq({ apiKey: process.env.GROQ_API_KEY });
+export const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export const GROQ_MODEL = 'llama-3.3-70b-versatile';
+export const CLAUDE_MODEL = 'claude-sonnet-4-6';
 
 export const SYSTEM_PROMPT = `You are an AI assistant that analyzes user text.
 Identify and analyze the following from the input, then output in English:

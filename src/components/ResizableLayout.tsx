@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Panel } from "@/components/Panel";
 import { TokenizerPanel } from "@/components/TokenizerPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
-import { VectorMap } from "@/components/VectorMap";
 import { PromptLog } from "@/components/PromptLog";
 import { TaskExecutor } from "@/components/TaskExecutor";
 
@@ -126,7 +125,7 @@ export function ResizableLayout() {
       <Panel
         title="AI Streaming Analysis"
         dotColor="var(--accent)"
-        badge="GROQ / llama-3.3-70b"
+        badge="Claude Sonnet"
         className="min-h-75"
       >
         <StreamingPanel />
@@ -135,14 +134,13 @@ export function ResizableLayout() {
       {/* VERTICAL HANDLE — col2 | col3 */}
       <DragHandle direction="col" onPointerDown={(e) => handlePointerDown("col3", e)} />
 
-      {/* COL 3, ROW 1 — Vector Space */}
+      {/* COL 3, ROW 1 — Notion Browser (placeholder) */}
       <Panel
-        title="Vector Space"
+        title="Notion Workspace"
         dotColor="var(--purple)"
-        badge="Jina Embeddings"
         className="min-h-60"
       >
-        <VectorMap />
+        <div />
       </Panel>
 
       {/* HORIZONTAL HANDLE — row1 | row2 */}
