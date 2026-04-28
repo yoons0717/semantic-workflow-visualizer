@@ -8,20 +8,20 @@ export async function GET() {
   try {
     const notion = new Client({ auth: process.env.NOTION_API_KEY });
     const res = await notion.search({
-      filter: { value: 'database', property: 'object' },
       sort: { direction: 'descending', timestamp: 'last_edited_time' },
     });
 
-    const databases = res.results.map((db) => {
-      if (db.object !== 'database') return null;
-      const title =
-        'title' in db && Array.isArray(db.title) && db.title[0]?.plain_text
-          ? db.title[0].plain_text
-          : 'Untitled';
-      const icon =
-        'icon' in db && db.icon?.type === 'emoji' ? db.icon.emoji : undefined;
-      return { id: db.id, title, icon };
-    }).filter(Boolean);
+    const databases = res.results
+      .filter((r) => r.object === 'database' || (r.object as string) === 'data_source')
+      .map((db) => {
+        const title =
+          'title' in db && Array.isArray(db.title) && db.title[0]?.plain_text
+            ? db.title[0].plain_text
+            : 'Untitled';
+        const icon =
+          'icon' in db && db.icon?.type === 'emoji' ? db.icon.emoji : undefined;
+        return { id: db.id, title, icon };
+      });
 
     return Response.json(databases);
   } catch {
