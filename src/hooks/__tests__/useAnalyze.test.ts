@@ -23,20 +23,8 @@ function makeStreamBody(chunks: string[]) {
   return { getReader: () => makeReader(chunks) };
 }
 
-function mockFetch(
-  analyzeChunks: string[],
-  tasks: unknown[] = [],
-  similarities: Record<string, number> = {}
-) {
+function mockFetch(analyzeChunks: string[], tasks: unknown[] = []) {
   fetchMock.mockImplementation((url: string) => {
-    if (url === '/api/embeddings') {
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(
-          Object.keys(similarities).length > 0 ? { similarities } : {}
-        ),
-      });
-    }
     if (url === '/api/analyze') {
       return Promise.resolve({
         ok: true,
@@ -135,30 +123,11 @@ describe('useAnalyze - 정상 플로우', () => {
 
     expect(useWorkflowStore.getState().streamedText).toBe('second run');
   });
-
-  it('임베딩 결과가 store의 similarities에 반영된다', async () => {
-    const similarities = { 'slack-1': 0.9, 'jira-1': 0.4 };
-    mockFetch(['analysis'], [], similarities);
-
-    const { result } = renderHook(() => useAnalyze());
-
-    await act(async () => {
-      await result.current.analyze('send slack message');
-    });
-
-    // embeddings fetch는 fire-and-forget이라 완료를 기다리는 추가 tick 필요
-    await act(async () => {});
-
-    const state = useWorkflowStore.getState();
-    expect(state.similarities['slack-1']).toBe(0.9);
-    expect(state.similarities['jira-1']).toBe(0.4);
-  });
 });
 
 describe('useAnalyze - 태스크 추출 엣지케이스', () => {
   it('/api/tasks 실패 시 tasks는 빈 배열, stage는 error로 처리된다', async () => {
     fetchMock.mockImplementation((url: string) => {
-      if (url === '/api/embeddings') return Promise.resolve({ json: () => Promise.resolve({}) });
       if (url === '/api/analyze') return Promise.resolve({
         ok: true,
         headers: { get: () => null },
@@ -181,7 +150,6 @@ describe('useAnalyze - 태스크 추출 엣지케이스', () => {
 
   it('/api/tasks 응답이 배열이 아니면 빈 배열로 처리된다', async () => {
     fetchMock.mockImplementation((url: string) => {
-      if (url === '/api/embeddings') return Promise.resolve({ json: () => Promise.resolve({}) });
       if (url === '/api/analyze') return Promise.resolve({
         ok: true,
         headers: { get: () => null },
@@ -189,7 +157,7 @@ describe('useAnalyze - 태스크 추출 엣지케이스', () => {
       });
       if (url === '/api/tasks') return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({ error: 'invalid format' }), // 배열이 아닌 응답
+        json: () => Promise.resolve({ error: 'invalid format' }),
       });
     });
 
@@ -207,7 +175,6 @@ describe('useAnalyze - 태스크 추출 엣지케이스', () => {
 describe('useAnalyze - 에러 플로우', () => {
   it('/api/analyze 실패 시 stage가 error로 전환된다', async () => {
     fetchMock.mockImplementation((url: string) => {
-      if (url === '/api/embeddings') return Promise.resolve({ json: () => Promise.resolve({}) });
       if (url === '/api/analyze') return Promise.resolve({ ok: false, status: 500 });
     });
 

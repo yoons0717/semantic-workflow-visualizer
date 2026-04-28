@@ -6,12 +6,30 @@ export interface Token {
 
 export type PipelineStage = 'idle' | 'tokenizing' | 'analyzing' | 'executing' | 'done' | 'error';
 
+export type TaskType = 'slack' | 'jira' | 'email' | 'generic' | 'notion';
+
 export interface WorkflowTask {
   id: string;
   title: string;
   description: string;
-  type: 'slack' | 'jira' | 'email' | 'generic';
+  type: TaskType;
   payload: Record<string, string>;
   status: 'pending' | 'approved' | 'rejected' | 'running' | 'success' | 'failed';
+  notionPageUrl?: string;
 }
 
+export interface NotionDatabase {
+  id: string;
+  title: string;
+  icon?: string;
+}
+
+export interface SavedWorkflow {
+  id: string;
+  name: string;
+  prompt: string;
+  githubRepo?: string;
+  createdAt: number;
+  lastRunAt?: number;
+  runCount: number;
+}

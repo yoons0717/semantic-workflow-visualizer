@@ -29,7 +29,8 @@ describe('reset', () => {
     store.setStage('error');
     store.appendStreamedText('partial stream');
     store.setErrorMessage('분석 중 오류가 발생했습니다');
-    store.setSimilarities({ 'slack-1': 0.95, 'jira-1': 0.4 });
+    store.setNotionTargetDatabaseId('db-123');
+    store.setGithubRepo('owner/repo');
 
     store.reset();
 
@@ -38,8 +39,9 @@ describe('reset', () => {
     expect(state.stage).toBe('idle');
     expect(state.streamedText).toBe('');
     expect(state.errorMessage).toBeNull();
-    expect(state.similarities).toEqual({});
     expect(state.tasks).toEqual([]);
+    expect(state.notionTargetDatabaseId).toBeNull();
+    expect(state.githubRepo).toBe('');
   });
 
   it('reset 후 appendStreamedText가 정상 동작한다 (reset이 스트림 상태를 완전히 끊는다)', () => {
