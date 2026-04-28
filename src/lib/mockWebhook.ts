@@ -3,6 +3,7 @@ import type { WorkflowTask } from '@/types';
 export interface WebhookResult {
   success: boolean;
   message: string;
+  notionPageUrl?: string;
 }
 
 const MOCK_DELAYS: Record<WorkflowTask['type'], number> = {
@@ -46,10 +47,31 @@ async function executeSlackTask(payload: Record<string, string>): Promise<Webhoo
   return { success: true, message: MOCK_MESSAGES.slack(payload) };
 }
 
-export async function executeTask(task: WorkflowTask): Promise<WebhookResult> {
-  if (task.type === 'slack') {
-    return executeSlackTask(task.payload);
+async function executeNotionTask(payload: Record<string, string>): Promise<WebhookResult> {
+  try {
+    const res = await fetch('/api/notion/rows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ database_id: payload.database_id, title: payload.title }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        success: true,
+        message: `Created in Notion: ${payload.title ?? 'Untitled'}`,
+        notionPageUrl: data.url ?? undefined,
+      };
+    }
+  } catch {
+    // fall through to mock
   }
+  await delay(MOCK_DELAYS.notion);
+  return { success: true, message: MOCK_MESSAGES.notion(payload) };
+}
+
+export async function executeTask(task: WorkflowTask): Promise<WebhookResult> {
+  if (task.type === 'slack') return executeSlackTask(task.payload);
+  if (task.type === 'notion') return executeNotionTask(task.payload);
   await delay(MOCK_DELAYS[task.type]);
   return {
     success: true,
