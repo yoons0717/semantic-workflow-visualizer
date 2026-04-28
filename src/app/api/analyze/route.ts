@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import { groqProvider, GROQ_MODEL, SYSTEM_PROMPT } from '@/lib/groq';
+import { groqProvider, GROQ_MODEL, SYSTEM_PROMPT, PR_ANALYSIS_SYSTEM_PROMPT } from '@/lib/groq';
 
 export async function POST(req: Request) {
   // 스트림 시작 전에 API 키 유무를 확인해 클라이언트가 res.ok로 에러를 감지할 수 있게 함.
@@ -9,11 +9,12 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, mode } = await req.json();
+    const system = mode === 'pr' ? PR_ANALYSIS_SYSTEM_PROMPT : SYSTEM_PROMPT;
 
     const result = streamText({
       model: groqProvider(GROQ_MODEL),
-      system: SYSTEM_PROMPT,
+      system,
       messages,
     });
 
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     return new Response(textResponse.body, {
       headers: {
         ...Object.fromEntries(textResponse.headers.entries()),
-        'x-prompt-log': encodeURIComponent(JSON.stringify({ system: SYSTEM_PROMPT })),
+        'x-prompt-log': encodeURIComponent(JSON.stringify({ system })),
       },
     });
   } catch {

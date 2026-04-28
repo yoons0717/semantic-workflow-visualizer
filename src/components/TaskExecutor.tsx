@@ -17,6 +17,9 @@ export function TaskExecutor() {
   const setStage = useWorkflowStore((s) => s.setStage);
   const notionDatabases = useWorkflowStore((s) => s.notionDatabases);
   const setNotionDatabases = useWorkflowStore((s) => s.setNotionDatabases);
+  const autoApproveNotion = useWorkflowStore((s) => s.autoApproveNotion);
+  const notionTargetDatabaseId = useWorkflowStore((s) => s.notionTargetDatabaseId);
+  const setAutoApproveNotion = useWorkflowStore((s) => s.setAutoApproveNotion);
 
   useEffect(() => {
     const hasNotionTask = tasks.some((t) => t.type === "notion");
@@ -73,6 +76,19 @@ export function TaskExecutor() {
     },
     [updateTask, checkAllDone]
   );
+
+  // PR 분석 모드: notion 태스크 자동 승인
+  useEffect(() => {
+    if (!autoApproveNotion || !notionTargetDatabaseId) return;
+    const pendingNotionTasks = useWorkflowStore
+      .getState()
+      .tasks.filter((t) => t.type === "notion" && t.status === "pending");
+    if (pendingNotionTasks.length === 0) return;
+    pendingNotionTasks.forEach((t) => {
+      handleApprove(t.id, { ...t.payload, database_id: notionTargetDatabaseId });
+    });
+    setAutoApproveNotion(false);
+  }, [tasks, autoApproveNotion, notionTargetDatabaseId, handleApprove, setAutoApproveNotion]);
 
   if (tasks.length === 0) {
     if (stage === "executing") {
