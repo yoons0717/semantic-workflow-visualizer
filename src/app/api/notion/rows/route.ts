@@ -2,6 +2,7 @@
 import { Client } from '@notionhq/client';
 import type { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 import { z } from 'zod';
+import { fetchDbSchema, findTitleKey, findStatusKey, findPriorityKey } from '@/lib/notionSchema';
 
 const BodySchema = z.object({
   database_id: z.string(),
@@ -12,25 +13,6 @@ const BodySchema = z.object({
 });
 
 type PageProperties = CreatePageParameters['properties'];
-type OptionItem = { name: string };
-type RawProperty = {
-  type: string;
-  status?: { options: OptionItem[] };
-  select?: { options: OptionItem[] };
-};
-type PropertySchema = Record<string, RawProperty>;
-
-async function getDbSchema(databaseId: string, apiKey: string): Promise<PropertySchema> {
-  const res = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Notion-Version': '2022-06-28',
-    },
-  });
-  if (!res.ok) return {};
-  const data = await res.json() as { properties?: PropertySchema };
-  return data.properties ?? {};
-}
 
 export async function POST(req: Request) {
   if (!process.env.NOTION_API_KEY) {
@@ -41,23 +23,11 @@ export async function POST(req: Request) {
     const body = BodySchema.parse(await req.json());
     const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
-    console.log('[/api/notion/rows] body:', JSON.stringify(body));
+    const schema = await fetchDbSchema(body.database_id, process.env.NOTION_API_KEY);
 
-    const schema = await getDbSchema(body.database_id, process.env.NOTION_API_KEY);
-    console.log('[/api/notion/rows] schema keys:', Object.keys(schema).map(k => `${k}(${schema[k].type})`));
-
-    const titleKey = Object.keys(schema).find((k) => schema[k].type === 'title') ?? 'title';
-    console.log('[/api/notion/rows] titleKey:', titleKey);
-
-    const statusKey = Object.keys(schema).find((k) => {
-      const t = schema[k].type;
-      return t === 'status' || (t === 'select' && /^(status|상태|state)$/i.test(k));
-    });
-
-    const priorityKey = Object.keys(schema).find((k) => {
-      const t = schema[k].type;
-      return t === 'select' && /^(priority|우선순위|importance)$/i.test(k);
-    });
+    const titleKey = findTitleKey(schema);
+    const statusKey = findStatusKey(schema);
+    const priorityKey = findPriorityKey(schema);
 
     const pageProps: Record<string, unknown> = {};
 
