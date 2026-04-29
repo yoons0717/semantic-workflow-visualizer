@@ -1,7 +1,7 @@
 // POST /api/tasks — LLM 분석 텍스트에서 notion 타입 태스크 목록 추출 (JSON 반환)
 import { generateText } from 'ai';
 import { z } from 'zod';
-import { groqProvider, GROQ_MODEL } from '@/lib/groq';
+import { geminiProvider, GEMINI_MODEL } from '@/lib/gemini';
 import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
 const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
@@ -19,8 +19,8 @@ Return ONLY this JSON structure, no other text:
 If there are no actionable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
-  if (!process.env.GROQ_API_KEY) {
-    return Response.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
+  if (!process.env.GEMINI_API_KEY) {
+    return Response.json({ error: "GEMINI_API_KEY not configured" }, { status: 500 });
   }
 
   try {
@@ -31,12 +31,9 @@ export async function POST(req: Request) {
     }
 
     const { text } = await generateText({
-      model: groqProvider(GROQ_MODEL),
+      model: geminiProvider(GEMINI_MODEL),
       system: TASK_EXTRACTION_PROMPT,
       messages: [{ role: 'user', content: analysisText }],
-      providerOptions: {
-        groq: { response_format: { type: 'json_object' } },
-      },
     });
 
     const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
