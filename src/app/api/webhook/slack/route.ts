@@ -12,7 +12,8 @@ export async function POST(req: Request) {
       body: JSON.stringify({ text: `[${channel ?? '#general'}] ${message}` }),
     });
     return Response.json({ ok: res.ok });
-  } catch {
+  } catch (err) {
+    console.error('[/api/webhook/slack]', err);
     return Response.json({ error: "Failed to send Slack message" }, { status: 500 });
   }
 }

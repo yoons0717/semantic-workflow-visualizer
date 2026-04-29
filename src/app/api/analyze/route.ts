@@ -27,7 +27,8 @@ export async function POST(req: Request) {
         'x-prompt-log': encodeURIComponent(JSON.stringify({ system })),
       },
     });
-  } catch {
+  } catch (err) {
+    console.error('[/api/analyze]', err);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

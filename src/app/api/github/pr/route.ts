@@ -33,6 +33,9 @@ export async function GET(req: Request) {
       const err = await prRes.json().catch(() => ({}));
       return Response.json({ error: err.message ?? 'Failed to fetch PR' }, { status: prRes.status });
     }
+    if (!filesRes.ok) {
+      return Response.json({ error: 'Failed to fetch PR files' }, { status: filesRes.status });
+    }
 
     const [prData, filesData] = await Promise.all([prRes.json(), filesRes.json()]);
 
@@ -47,7 +50,8 @@ export async function GET(req: Request) {
       filesChanged: (filesData as Array<{ filename: string }>).map((f) => f.filename),
       diff,
     });
-  } catch {
+  } catch (err) {
+    console.error('[/api/github/pr]', err);
     return Response.json({ error: 'Failed to fetch GitHub PR' }, { status: 500 });
   }
 }
