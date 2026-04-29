@@ -2,7 +2,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 export const geminiProvider = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export const GEMINI_MODEL = (process.env.GEMINI_MODEL as string | undefined) ?? 'gemini-2.5-flash';
+export const GEMINI_MODEL = (process.env.GEMINI_MODEL as string | undefined) ?? 'gemini-2.5-flash-lite';
 
 export const SYSTEM_PROMPT = `You are an AI assistant that analyzes user text.
 Identify and analyze the following from the input, then output in English:

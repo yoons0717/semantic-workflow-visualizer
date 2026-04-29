@@ -1,22 +1,26 @@
 // POST /api/tasks — LLM 분석 텍스트에서 notion 타입 태스크 목록 추출 (JSON 반환)
-import { generateText } from 'ai';
+import { generateObject } from 'ai';
 import { z } from 'zod';
 import { geminiProvider, GEMINI_MODEL } from '@/lib/gemini';
-import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
-const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
+// Generation schema — typed payload so Gemini fills required fields correctly
+const GenerationSchema = z.object({
+  tasks: z.array(z.object({
+    title: z.string(),
+    description: z.string(),
+    priority: z.enum(['High', 'Medium', 'Low']),
+  })),
+});
 
-const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks as Notion issues and return ONLY a JSON object with a "tasks" array.
+const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks as Notion issues.
 
-Every task must have type "notion" with this exact payload shape:
-{ "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }
+Every task's payload field MUST contain exactly these four string keys:
+- "database_id": always "__selected__"
+- "title": same as the task title
+- "status": always "Not started"
+- "priority": "High" for bugs/critical issues, "Medium" for improvements, "Low" for minor suggestions
 
-Use priority "High" for bugs and critical issues, "Medium" for improvements, "Low" for minor suggestions.
-
-Return ONLY this JSON structure, no other text:
-{ "tasks": [ { "id": "task-1", "title": "...", "description": "...", "type": "notion", "payload": { "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }, "status": "pending" } ] }
-
-If there are no actionable tasks, return: { "tasks": [] }`;
+If there are no actionable tasks, return an empty tasks array.`;
 
 export async function POST(req: Request) {
   if (!process.env.GEMINI_API_KEY) {
@@ -30,19 +34,34 @@ export async function POST(req: Request) {
       return Response.json([]);
     }
 
-    const { text } = await generateText({
+    const { object } = await generateObject({
       model: geminiProvider(GEMINI_MODEL),
+      schema: GenerationSchema,
       system: TASK_EXTRACTION_PROMPT,
       messages: [{ role: 'user', content: analysisText }],
     });
 
-    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-    const raw = JSON.parse(cleaned);
-    const { tasks } = ResponseSchema.parse(raw);
+    const tasks = object.tasks.map((t, i) => ({
+      id: `task-${i + 1}`,
+      title: t.title,
+      description: t.description,
+      type: 'notion' as const,
+      status: 'pending' as const,
+      payload: {
+        database_id: '__selected__',
+        title: t.title,
+        status: 'Not started',
+        priority: t.priority,
+      },
+    }));
 
     return Response.json(tasks);
   } catch (err) {
     console.error('[/api/tasks]', err);
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+      return Response.json({ error: `Gemini quota exceeded (model: ${GEMINI_MODEL}). Check https://aistudio.google.com/app/quota` }, { status: 429 });
+    }
     return Response.json({ error: "Failed to extract tasks" }, { status: 500 });
   }
 }
