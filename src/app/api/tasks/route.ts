@@ -1,3 +1,4 @@
+// POST /api/tasks — LLM 분석 텍스트에서 notion 타입 태스크 목록 추출 (JSON 반환)
 import { generateText } from 'ai';
 import { z } from 'zod';
 import { groqProvider, GROQ_MODEL } from '@/lib/groq';
@@ -5,26 +6,17 @@ import { WorkflowTaskArraySchema } from '@/lib/taskSchema';
 
 const ResponseSchema = z.object({ tasks: WorkflowTaskArraySchema });
 
-const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks and return ONLY a JSON object with a "tasks" array.
+const TASK_EXTRACTION_PROMPT = `You are a task extraction engine. Given an AI analysis text, extract all actionable tasks as Notion issues and return ONLY a JSON object with a "tasks" array.
 
-Type selection rules:
-- "slack": sending messages, notifications, alerts to a channel or user
-- "jira": creating tickets, issues, tasks in a project tracker
-- "email": sending emails
-- "notion": creating entries or documents in Notion (issues, tasks, notes, reports)
-- "generic": everything else
+Every task must have type "notion" with this exact payload shape:
+{ "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }
 
-Payload keys by type:
-- slack: { "channel": "...", "message": "..." }
-- jira: { "project": "...", "summary": "...", "type": "Bug|Task|Story" }
-- email: { "to": "...", "subject": "...", "body": "..." }
-- notion: { "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }
-- generic: { "action": "..." }
+Use priority "High" for bugs and critical issues, "Medium" for improvements, "Low" for minor suggestions.
 
 Return ONLY this JSON structure, no other text:
-{ "tasks": [ { "id": "task-1", "title": "...", "description": "...", "type": "...", "payload": {...}, "status": "pending" } ] }
+{ "tasks": [ { "id": "task-1", "title": "...", "description": "...", "type": "notion", "payload": { "database_id": "__selected__", "title": "...", "status": "Not started", "priority": "Medium" }, "status": "pending" } ] }
 
-If there are no executable tasks, return: { "tasks": [] }`;
+If there are no actionable tasks, return: { "tasks": [] }`;
 
 export async function POST(req: Request) {
   if (!process.env.GROQ_API_KEY) {
@@ -47,11 +39,13 @@ export async function POST(req: Request) {
       },
     });
 
-    const raw = JSON.parse(text);
+    const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    const raw = JSON.parse(cleaned);
     const { tasks } = ResponseSchema.parse(raw);
 
     return Response.json(tasks);
-  } catch {
+  } catch (err) {
+    console.error('[/api/tasks]', err);
     return Response.json({ error: "Failed to extract tasks" }, { status: 500 });
   }
 }
