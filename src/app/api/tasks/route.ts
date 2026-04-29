@@ -1,3 +1,4 @@
+// POST /api/tasks — LLM 분석 텍스트에서 notion 타입 태스크 목록 추출 (JSON 반환)
 import { generateText } from 'ai';
 import { z } from 'zod';
 import { groqProvider, GROQ_MODEL } from '@/lib/groq';

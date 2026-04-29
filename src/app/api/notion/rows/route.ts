@@ -1,3 +1,4 @@
+// POST /api/notion/rows — Notion DB에 새 페이지(이슈) 생성. DB 스키마를 동적으로 조회해 컬럼명·언어 무관하게 매핑
 import { Client } from '@notionhq/client';
 import type { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 import { z } from 'zod';

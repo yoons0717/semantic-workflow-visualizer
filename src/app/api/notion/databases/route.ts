@@ -1,3 +1,4 @@
+// GET /api/notion/databases — 연결된 Notion 워크스페이스의 DB 목록 반환 (TaskCard DB 셀렉터용)
 import { Client } from '@notionhq/client';
 
 interface NotionDataSourceResult {

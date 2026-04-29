@@ -1,3 +1,4 @@
+// GET /api/github/pr?repo=owner/repo&pr=123 — GitHub PR 제목·본문·diff 반환 (최대 12,000자 truncate)
 const MAX_DIFF_CHARS = 12000;
 
 export async function GET(req: Request) {

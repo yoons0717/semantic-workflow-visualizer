@@ -1,3 +1,4 @@
+// POST /api/webhook/slack — Slack 채널에 메시지 전송 (SLACK_WEBHOOK_URL 필요)
 export async function POST(req: Request) {
   if (!process.env.SLACK_WEBHOOK_URL) {
     return Response.json({ error: "SLACK_WEBHOOK_URL not configured" }, { status: 500 });

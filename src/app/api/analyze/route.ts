@@ -1,3 +1,4 @@
+// POST /api/analyze — 사용자 텍스트 또는 PR diff를 LLM(Groq)으로 스트리밍 분석
 import { streamText } from 'ai';
 import { groqProvider, GROQ_MODEL, SYSTEM_PROMPT, PR_ANALYSIS_SYSTEM_PROMPT } from '@/lib/groq';
 

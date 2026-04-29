@@ -1,3 +1,4 @@
+// GET /api/notion/databases/[id] — 특정 DB의 status·priority 실제 옵션 목록 반환 (TaskCard 드롭다운용)
 type OptionItem = { name: string };
 type RawProperty = {
   type: string;
