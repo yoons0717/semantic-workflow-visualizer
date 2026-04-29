@@ -29,6 +29,10 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error('[/api/analyze]', err);
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+      return Response.json({ error: `Gemini quota exceeded (model: ${GEMINI_MODEL}). Set GEMINI_MODEL env var to switch models, or check https://aistudio.google.com/app/quota` }, { status: 429 });
+    }
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
