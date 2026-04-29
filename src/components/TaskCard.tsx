@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { WorkflowTask } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 
@@ -32,8 +32,34 @@ const STATUS_CONFIG: Record<
 
 export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
   const [payload, setPayload] = useState<Record<string, string>>(task.payload);
+  const [localDescription, setLocalDescription] = useState(task.description);
   const [selectedDbId, setSelectedDbId] = useState<string>("");
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [priorityOptions, setPriorityOptions] = useState<string[]>([]);
   const notionDatabases = useWorkflowStore((s) => s.notionDatabases);
+
+  useEffect(() => {
+    if (!selectedDbId) return;
+    fetch(`/api/notion/databases/${selectedDbId}`)
+      .then((r) => r.json())
+      .then((data: { statusOptions?: string[]; priorityOptions?: string[] }) => {
+        if (data.statusOptions?.length) {
+          setStatusOptions(data.statusOptions);
+          setPayload((prev) => ({
+            ...prev,
+            status: data.statusOptions!.includes(prev.status) ? prev.status : data.statusOptions![0],
+          }));
+        }
+        if (data.priorityOptions?.length) {
+          setPriorityOptions(data.priorityOptions);
+          setPayload((prev) => ({
+            ...prev,
+            priority: data.priorityOptions!.includes(prev.priority) ? prev.priority : data.priorityOptions![0],
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [selectedDbId]);
 
   const isTerminal = ["rejected", "running", "success", "failed"].includes(task.status);
   const statusCfg = STATUS_CONFIG[task.status];
@@ -73,9 +99,18 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
       </div>
 
       {/* Description */}
-      <div className="text-[10px] text-text-sec leading-normal line-clamp-2">
-        {task.description}
-      </div>
+      {task.type === "notion" && task.status === "pending" ? (
+        <textarea
+          value={localDescription}
+          onChange={(e) => setLocalDescription(e.target.value)}
+          rows={3}
+          className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 text-[10px] text-text-sec leading-normal resize-none focus:outline-none focus:border-[#e06c75]"
+        />
+      ) : (
+        <div className="text-[10px] text-text-sec leading-normal line-clamp-2">
+          {task.description}
+        </div>
+      )}
 
       {/* Notion DB selector */}
       {task.type === "notion" && task.status === "pending" && (
@@ -100,22 +135,44 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
 
       {/* Payload */}
       <div className="flex flex-col gap-1.25 mt-1">
-        {Object.entries(payload).filter(([key]) => {
-          if (key === 'database_id') return false;
-          if (task.type === 'notion' && (key === 'status' || key === 'priority')) return false;
-          return true;
-        }).map(([key, value]) => (
+        {Object.entries(payload).filter(([key]) => key !== 'database_id').map(([key, value]) => (
           <div key={key} className="flex flex-col gap-0.5">
             <span className="font-mono text-[8px] tracking-[0.06em] text-text-dim uppercase">
               {key}
             </span>
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => handlePayloadChange(key, e.target.value)}
-              disabled={isTerminal}
-              className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-default"
-            />
+            {task.type === 'notion' && key === 'status' ? (
+              <select
+                value={statusOptions.includes(value) ? value : ''}
+                onChange={(e) => handlePayloadChange(key, e.target.value)}
+                disabled={isTerminal || statusOptions.length === 0}
+                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] disabled:opacity-50 disabled:cursor-default appearance-none"
+              >
+                {statusOptions.length === 0
+                  ? <option value="">— select DB first —</option>
+                  : statusOptions.map((o) => <option key={o} value={o}>{o}</option>)
+                }
+              </select>
+            ) : task.type === 'notion' && key === 'priority' ? (
+              <select
+                value={priorityOptions.includes(value) ? value : ''}
+                onChange={(e) => handlePayloadChange(key, e.target.value)}
+                disabled={isTerminal || priorityOptions.length === 0}
+                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] disabled:opacity-50 disabled:cursor-default appearance-none"
+              >
+                {priorityOptions.length === 0
+                  ? <option value="">— select DB first —</option>
+                  : priorityOptions.map((o) => <option key={o} value={o}>{o}</option>)
+                }
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => handlePayloadChange(key, e.target.value)}
+                disabled={isTerminal}
+                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-accent disabled:opacity-50 disabled:cursor-default"
+              />
+            )}
           </div>
         ))}
       </div>
@@ -124,7 +181,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
       {task.status === "pending" && (
         <div className="flex gap-2 mt-1 pt-2 border-t border-border-dim">
           <button
-            onClick={() => onApprove(task.type === "notion" ? { ...payload, database_id: selectedDbId } : payload)}
+            onClick={() => onApprove(task.type === "notion" ? { ...payload, database_id: selectedDbId, content: localDescription } : payload)}
             disabled={task.type === "notion" && !selectedDbId}
             className="flex-1 font-mono text-[9px] tracking-[0.06em] uppercase py-1.25 rounded-xs bg-accent-dim text-accent border border-accent/25 hover:bg-accent/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >

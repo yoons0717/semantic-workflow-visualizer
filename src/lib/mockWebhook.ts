@@ -48,25 +48,26 @@ async function executeSlackTask(payload: Record<string, string>): Promise<Webhoo
 }
 
 async function executeNotionTask(payload: Record<string, string>): Promise<WebhookResult> {
-  try {
-    const res = await fetch('/api/notion/rows', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ database_id: payload.database_id, title: payload.title }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        success: true,
-        message: `Created in Notion: ${payload.title ?? 'Untitled'}`,
-        notionPageUrl: data.url ?? undefined,
-      };
-    }
-  } catch {
-    // fall through to mock
+  const res = await fetch('/api/notion/rows', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      database_id: payload.database_id,
+      title: payload.title,
+      status: payload.status,
+      priority: payload.priority,
+      content: payload.content,
+    }),
+  });
+  const data = await res.json();
+  if (res.ok) {
+    return {
+      success: true,
+      message: `Created in Notion: ${payload.title ?? 'Untitled'}`,
+      notionPageUrl: (data as { url?: string }).url ?? undefined,
+    };
   }
-  await delay(MOCK_DELAYS.notion);
-  return { success: true, message: MOCK_MESSAGES.notion(payload) };
+  return { success: false, message: (data as { error?: string }).error ?? 'Failed to create row' };
 }
 
 export async function executeTask(task: WorkflowTask): Promise<WebhookResult> {

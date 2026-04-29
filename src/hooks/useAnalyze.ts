@@ -52,8 +52,6 @@ export function useAnalyze() {
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
   const setTasks = useWorkflowStore((s) => s.setTasks);
   const setErrorMessage = useWorkflowStore((s) => s.setErrorMessage);
-  const setAutoApproveNotion = useWorkflowStore((s) => s.setAutoApproveNotion);
-
   const analyze = useCallback(
     async (input: string) => {
       clearStreamedText();
@@ -86,26 +84,22 @@ export function useAnalyze() {
     async (repo: string, prNumber: string) => {
       clearStreamedText();
       setTasks([]);
-      setAutoApproveNotion(true);
       setStage("analyzing");
 
-      let diff = '';
-      let title = '';
       try {
         const prRes = await fetch(
           `/api/github/pr?repo=${encodeURIComponent(repo)}&pr=${encodeURIComponent(prNumber)}`,
         );
         if (!prRes.ok) throw new Error(`GitHub API error: ${prRes.status}`);
         const data = await prRes.json();
-        title = data.title as string;
+        const title = data.title as string;
         const body = (data.body as string) ?? '';
-        diff = data.diff as string;
+        const diff = data.diff as string;
         const input = `PR: ${title}${body ? `\n\nDescription:\n${body}` : ''}\n\nDiff:\n${diff}`;
 
         await streamAnalysis(input, appendStreamedText, setPromptLog, 'pr');
       } catch {
         setErrorMessage("PR 분석 중 오류가 발생했습니다");
-        setAutoApproveNotion(false);
         setStage("error");
         return;
       }
@@ -114,18 +108,19 @@ export function useAnalyze() {
       const analysisText = useWorkflowStore.getState().streamedText;
       try {
         const tasks = await extractTasks(analysisText);
-        setTasks(tasks);
-        if (tasks.length === 0) {
-          setAutoApproveNotion(false);
-          setStage("done");
-        }
+        const tagged = tasks.map((t) =>
+          t.type === "notion"
+            ? { ...t, payload: { ...t.payload, title: `[#${prNumber}] ${t.payload.title}` } }
+            : t
+        );
+        setTasks(tagged);
+        if (tagged.length === 0) setStage("done");
       } catch {
         setErrorMessage("태스크 추출 중 오류가 발생했습니다");
-        setAutoApproveNotion(false);
         setStage("error");
       }
     },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setErrorMessage, setAutoApproveNotion],
+    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setErrorMessage],
   );
 
   return { analyze, analyzePR };
