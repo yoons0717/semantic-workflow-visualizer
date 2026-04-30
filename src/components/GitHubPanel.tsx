@@ -100,7 +100,7 @@ export function GitHubPanel() {
             <button
               key={repo}
               onClick={() => selectRepo(repo)}
-              className={`font-mono text-[9px] tracking-[0.06em] px-2 py-0.5 rounded-xs border transition-all duration-150 ${
+              className={`font-mono text-[9px] tracking-[0.06em] px-2 py-0.5 rounded-xs border transition-all duration-150 max-w-[160px] truncate ${
                 githubRepo === repo
                   ? "border-accent text-accent bg-bg-accent-muted"
                   : "border-border text-text-sec hover:border-accent hover:text-accent"
