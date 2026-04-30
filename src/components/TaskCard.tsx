@@ -11,11 +11,8 @@ interface TaskCardProps {
 }
 
 const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
-  slack:   "text-swv-teal border-swv-teal/25",
-  jira:    "text-[#a78bfa] border-[#a78bfa]/25",
-  email:   "text-swv-amber border-swv-amber/25",
-  generic: "text-text-sec border-border",
-  notion:  "text-[#e06c75] border-[#e06c75]/25",
+  slack:  "text-swv-teal border-swv-teal/25",
+  notion: "text-[#e06c75] border-[#e06c75]/25",
 };
 
 const STATUS_CONFIG: Record<

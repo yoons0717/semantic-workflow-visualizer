@@ -12,45 +12,47 @@ src/
 │   ├── layout.tsx                    # 전역 레이아웃, 다크 테마
 │   ├── page.tsx                      # 5개 패널 조합 (ResizableLayout 사용)
 │   └── api/
-│       ├── analyze/route.ts          # SSE 스트리밍 엔드포인트
-│       ├── embeddings/route.ts       # Jina AI 임베딩 + 코사인 유사도 계산
+│       ├── analyze/route.ts          # Gemini SSE 스트리밍 엔드포인트
 │       ├── tasks/route.ts            # structured JSON 태스크 추출 엔드포인트
-│       └── webhook/slack/route.ts    # Slack Incoming Webhook 서버사이드 프록시
+│       ├── webhook/slack/route.ts    # Slack Incoming Webhook 서버사이드 프록시
+│       ├── github/pr/route.ts        # GitHub PR 데이터 조회 (제목·본문·diff)
+│       └── notion/
+│           ├── databases/route.ts    # Notion DB 목록 조회
+│           ├── databases/[id]/route.ts  # Notion DB 스키마 (status·priority 옵션)
+│           └── rows/route.ts         # Notion 페이지(이슈) 생성
 │
 ├── components/
 │   ├── __tests__/
 │   ├── ResizableLayout.tsx           # 드래그 핸들 기반 그리드 레이아웃
 │   ├── Panel.tsx                     # 패널 공통 래퍼
-│   ├── TokenizerPanel.tsx            # 실시간 토크나이저 UI
-│   ├── VectorMap.tsx                 # D3 force simulation + 노드 툴팁
-│   ├── StreamingPanel.tsx            # LLM 스트리밍 텍스트 + 커스텀 마크다운 렌더링
+│   ├── TokenizerPanel.tsx            # GitHub PR 입력 UI (repo + PR 번호)
+│   ├── NotionBrowser.tsx             # Notion 워크스페이스 DB 브라우저
+│   ├── StreamingPanel.tsx            # Gemini 스트리밍 텍스트 + 마크다운 렌더링
 │   ├── ErrorBanner.tsx               # 분석 실패 시 에러 메시지 + Try Again 버튼
 │   ├── PromptLog.tsx                 # 시스템 프롬프트 투명성 패널
 │   ├── TaskExecutor.tsx              # 태스크 카드 목록 + 전체 완료 감지
 │   ├── TaskCard.tsx                  # 개별 태스크 카드 (인라인 편집, 승인/거부)
 │   ├── PipelineStatus.tsx            # 상단 파이프라인 단계 바
+│   ├── PipelineBadge.tsx             # 헤더 상태 뱃지
 │   ├── EmptyState.tsx                # 빈 상태 공통 래퍼
 │   └── Spinner.tsx
 │
 ├── hooks/
 │   ├── __tests__/
-│   ├── useAnalyze.ts                 # 분석 전체 파이프라인 훅
-│   └── useVectorSimulation.ts        # D3 force simulation 로직 (VectorMap 전용)
+│   └── useAnalyze.ts                 # PR 분석 전체 파이프라인 훅
 │
 ├── store/
 │   ├── __tests__/
 │   └── workflowStore.ts              # Zustand 전역 상태 + 액션
 │
 ├── lib/
-│   ├── __tests__/
-│   ├── groq.ts                       # Groq 클라이언트, 모델명, 시스템 프롬프트
-│   ├── tokenizer.ts                  # gpt-tokenizer cl100k_base 래퍼
-│   ├── knowledge.ts                  # 워크플로우 지식베이스 + 코사인 유사도 함수
+│   ├── gemini.ts                     # Gemini 클라이언트, 모델명, 시스템 프롬프트
 │   ├── taskSchema.ts                 # Zod 스키마 — WorkflowTask 구조 검증
-│   └── mockWebhook.ts                # 태스크 실행 시뮬레이터
+│   ├── mockWebhook.ts                # 태스크 실행 — Notion 직접 연동, Slack webhook 연동
+│   └── notionSchema.ts               # Notion DB 스키마 조회·파싱 유틸
 │
 └── types/
-    └── index.ts                      # Token, WorkflowTask, PipelineStage, WorkflowState
+    └── index.ts                      # WorkflowTask, PipelineStage, NotionDatabase
 ```
 
 ---
@@ -58,15 +60,14 @@ src/
 ## 데이터 흐름 (파이프라인)
 
 ```
-idle → tokenizing → analyzing → executing → done
-                                           ↘ error
+idle → analyzing → executing → done
+                              ↘ error
 ```
 
 | 단계 | 트리거 | 담당 코드 |
 |---|---|---|
 | `idle` | 초기 상태 | `workflowStore.ts` initialState |
-| `tokenizing` | 텍스트 입력 시 | `TokenizerPanel.tsx` → `tokenizer.ts` |
-| `analyzing` | "Start Analysis" 클릭 | `useAnalyze.ts` → `POST /api/analyze` |
+| `analyzing` | "▶ Analyze PR" 클릭 | `useAnalyze.ts` → `GET /api/github/pr` → `POST /api/analyze` |
 | `executing` | SSE 스트리밍 완료 후 | `useAnalyze.ts` → `POST /api/tasks` |
 | `done` | 모든 태스크 완료 or 태스크 없음 | `TaskExecutor.tsx` or `useAnalyze.ts` |
 | `error` | API 요청 실패 | `useAnalyze.ts` catch 블록 |
@@ -79,36 +80,24 @@ idle → tokenizing → analyzing → executing → done
 
 ## 핵심 모듈
 
-### `lib/groq.ts`
+### `lib/gemini.ts`
 
-Groq 클라이언트와 시스템 프롬프트를 중앙 관리합니다.
-
-```ts
-export const groqProvider = createGroq({ apiKey: process.env.GROQ_API_KEY });
-export const GROQ_MODEL = 'llama-3.3-70b-versatile';
-export const SYSTEM_PROMPT = `...`;
-```
-
-프롬프트를 수정하려면 `SYSTEM_PROMPT` 상수만 변경하면 됩니다. 변경 결과는 PromptLog 패널에서 바로 확인 가능합니다.
-
----
-
-### `lib/knowledge.ts`
-
-워크플로우 지식베이스(10개 항목)와 코사인 유사도 함수를 제공합니다.
+Gemini 클라이언트와 시스템 프롬프트를 중앙 관리합니다.
 
 ```ts
-export const KNOWLEDGE_BASE: KnowledgeItem[];
-export function cosineSimilarity(a: number[], b: number[]): number
+export const geminiProvider = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
+export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite';
+export const SYSTEM_PROMPT = `...`;        // 일반 텍스트 분석용
+export const PR_ANALYSIS_SYSTEM_PROMPT = `...`;  // PR diff 분석용
 ```
 
-`cosineSimilarity`는 `/api/embeddings`에서 Jina AI 임베딩 벡터 간 유사도 계산에 사용됩니다.
+프롬프트를 수정하려면 해당 상수만 변경하면 됩니다. 변경 결과는 PromptLog 패널에서 바로 확인 가능합니다.
 
 ---
 
 ### `lib/mockWebhook.ts`
 
-Jira · Email · Generic 태스크 실행을 시뮬레이션합니다. Slack은 `SLACK_WEBHOOK_URL`이 있으면 `/api/webhook/slack`으로 실제 전송합니다.
+Notion과 Slack 태스크 실행을 담당합니다. Notion은 `/api/notion/rows`를 직접 호출하고, Slack은 `SLACK_WEBHOOK_URL`이 있으면 `/api/webhook/slack`으로 실제 전송, 없으면 mock fallback입니다.
 
 ```ts
 export async function executeTask(task: WorkflowTask): Promise<{ success: boolean; message: string }>
@@ -116,41 +105,35 @@ export async function executeTask(task: WorkflowTask): Promise<{ success: boolea
 
 ---
 
-### `hooks/useAnalyze.ts`
+### `lib/notionSchema.ts`
 
-전체 분석 파이프라인을 조율하는 핵심 훅입니다.
+Notion DB 스키마를 조회하고 title·status·priority 컬럼을 동적으로 탐색합니다. 컬럼명이 한국어이거나 커스텀 이름이어도 type으로 매칭합니다.
 
 ```ts
-const { analyze } = useAnalyze();
-await analyze(inputText);
+export async function fetchDbSchema(databaseId: string, apiKey: string): Promise<Record<string, unknown>>
+export function findTitleKey(schema): string
+export function findStatusKey(schema): string | null
+export function findPriorityKey(schema): string | null
+export function extractOptions(prop): string[]
+```
+
+---
+
+### `hooks/useAnalyze.ts`
+
+PR 분석 전체 파이프라인을 조율하는 핵심 훅입니다.
+
+```ts
+const { analyzePR } = useAnalyze();
+await analyzePR(repo, prNumber);
 ```
 
 내부 동작:
 1. 스토어 초기화 (`clearStreamedText`, `setTasks([])`, `setStage('analyzing')`)
-2. `POST /api/analyze` → SSE 스트리밍 → `appendStreamedText` 반복 호출
-3. `POST /api/embeddings` 병렬 호출 (fire-and-forget) → `setSimilarities`
-4. 스트리밍 완료 후 `POST /api/tasks` → `WorkflowTask[]` 추출
+2. `GET /api/github/pr` → PR 제목·본문·diff 수집
+3. `POST /api/analyze` → Gemini SSE 스트리밍 → `appendStreamedText` 반복 호출
+4. 스트리밍 완료 후 `POST /api/tasks` → `WorkflowTask[]` 추출 (제목에 `[#PR번호]` 태그 자동 추가)
 5. 에러 시 `setErrorMessage` + `setStage('error')`
-
-> `useChat`을 쓰지 않는 이유: 응답 헤더(`x-prompt-log`)에 접근하는 API가 없어서 fetch를 직접 사용합니다.
-
----
-
-### `components/VectorMap.tsx`
-
-`useVectorSimulation` 훅을 호출하고 SVG + 툴팁을 렌더링하는 얇은 컴포넌트입니다. D3 로직은 모두 훅에 위임합니다.
-
-- `idle`, `error` stage에서는 EmptyState 표시
-- 노드 hover 시 `NodeTooltip` 표시 (label, category, 유사도 점수, description)
-
-### `hooks/useVectorSimulation.ts`
-
-D3 force simulation 로직을 담당하는 훅입니다.
-
-- `analyzing` 단계 시작 시 초기화 (fallback 유사도 0.1)
-- `/api/embeddings` 결과 도착 시 노드 크기·링크 굵기·투명도를 600ms transition으로 갱신
-- 유사도 0.05 미만 링크는 투명 처리
-- `SimNode`, `SimLink`, `TooltipState` 타입과 시각 속성 헬퍼 함수 export
 
 ---
 
@@ -160,14 +143,16 @@ D3 force simulation 로직을 담당하는 훅입니다.
 
 ```ts
 interface WorkflowStore {
-  input: string;                        // 사용자 입력 원문
-  tokens: Token[];                      // 토큰화 결과
   stage: PipelineStage;                 // 현재 파이프라인 단계
-  streamedText: string;                 // LLM 응답 누적 텍스트
+  streamedText: string;                 // Gemini 응답 누적 텍스트
   tasks: WorkflowTask[];                // 추출된 태스크 목록
   promptLog: string;                    // 시스템 프롬프트 (투명성 패널용)
-  similarities: Record<string, number>; // knowledge item id → 코사인 유사도
   errorMessage: string | null;          // 분석 실패 시 ErrorBanner에 표시할 메시지
+  notionDatabases: NotionDatabase[];    // 연결된 Notion DB 목록
+  githubRepo: string;                   // owner/repo 형식
+  githubPrNumber: string;               // PR 번호 문자열
+  notionTargetDatabaseId: string | null; // 자동 승인 대상 DB ID
+  autoApproveNotion: boolean;           // true이면 notion 태스크 자동 승인
 }
 ```
 
@@ -186,26 +171,14 @@ const stage = useWorkflowStore((s) => s.stage);
 
 ### `POST /api/analyze`
 
-Groq LLM의 SSE 스트리밍 분석 결과를 반환합니다.
+Gemini LLM의 SSE 스트리밍 분석 결과를 반환합니다.
 
-**요청**: `{ messages: [{ role: 'user', content: string }] }`
+**요청**: `{ messages: [{ role: 'user', content: string }], mode?: 'pr' }`
 
-**응답**: `text/plain` 스트림 + `x-prompt-log` 헤더
+**응답**: `text/plain` 스트림 + `x-prompt-log` 헤더 (사용된 system prompt)
 
-> Vercel AI SDK는 에러가 생겨도 HTTP 200으로 스트림을 시작하므로, `GROQ_API_KEY` 유무를 스트림 시작 전에 먼저 체크합니다.
-
----
-
-### `POST /api/embeddings`
-
-입력 텍스트와 지식베이스 항목 간 코사인 유사도를 계산합니다.
-
-**요청**: `{ text: string }`
-
-**응답**: `{ similarities: { [id]: number } }`
-
-- `JINA_API_KEY` 없으면 즉시 `{ similarities: {} }` 반환
-- 지식베이스 임베딩은 서버 인스턴스에 캐싱 (cold start 1회만 계산)
+- `mode: 'pr'`이면 `PR_ANALYSIS_SYSTEM_PROMPT` 사용, 없으면 일반 `SYSTEM_PROMPT` 사용
+- AI SDK는 에러가 생겨도 HTTP 200으로 스트림을 시작하므로, `GEMINI_API_KEY` 유무를 스트림 시작 전에 먼저 체크
 
 ---
 
@@ -215,7 +188,45 @@ Groq LLM의 SSE 스트리밍 분석 결과를 반환합니다.
 
 **요청**: `{ analysisText: string }`
 
-**응답**: `WorkflowTask[]` (Groq `json_object` mode + Zod 검증, 실패 시 `[]` 반환)
+**응답**: `WorkflowTask[]` (Gemini `json_object` mode + Zod 검증, 실패 시 `[]` 반환)
+
+---
+
+### `GET /api/github/pr`
+
+GitHub REST API에서 PR 데이터를 수집합니다.
+
+**요청**: `?repo=owner/repo&pr=123`
+
+**응답**: `{ title, body, filesChanged, diff }` (diff는 최대 12,000자 truncate)
+
+- `GITHUB_TOKEN` 없으면 인증 없이 요청 (공개 레포만, rate limit 60 req/h)
+
+---
+
+### `GET /api/notion/databases`
+
+연결된 Notion 워크스페이스의 DB 목록을 반환합니다.
+
+**응답**: `NotionDatabase[]` (`{ id, title, icon? }`)
+
+---
+
+### `GET /api/notion/databases/[id]`
+
+특정 DB의 status·priority 옵션 목록을 반환합니다. (TaskCard 드롭다운용)
+
+**응답**: `{ statusOptions: string[], priorityOptions: string[] }`
+
+---
+
+### `POST /api/notion/rows`
+
+Notion DB에 새 페이지(이슈)를 생성합니다. DB 스키마를 동적으로 조회해 컬럼명 무관하게 매핑합니다.
+
+**요청**: `{ database_id, title, status?, priority?, content? }`
+
+**응답**: `{ url: string | null }`
 
 ---
 
@@ -228,7 +239,6 @@ Slack Incoming Webhook으로 메시지를 전송하는 서버사이드 프록시
 **응답**: `{ ok: boolean }`
 
 - `SLACK_WEBHOOK_URL` 없으면 즉시 `{ ok: false }` 반환
-- Webhook URL을 클라이언트에 노출하지 않기 위한 프록시 구조
 
 ---
 
@@ -238,28 +248,16 @@ Slack Incoming Webhook으로 메시지를 전송하는 서버사이드 프록시
 
 수정이 필요한 파일 4곳:
 
-1. `src/types/index.ts` — 타입 유니온에 추가
+1. `src/types/index.ts` — `TaskType` 유니온에 추가
 2. `src/lib/mockWebhook.ts` — Mock 실행 케이스 추가
 3. `src/components/TaskCard.tsx` — 배지 색상 매핑 추가
-4. `src/lib/groq.ts` — `SYSTEM_PROMPT`에 타입 추출 예시 추가
+4. `src/lib/gemini.ts` — `SYSTEM_PROMPT`에 타입 추출 예시 추가
 
 ---
 
-### 워크플로우 지식베이스 항목 추가
+### 시스템 프롬프트 수정
 
-`src/lib/knowledge.ts`의 `KNOWLEDGE_BASE` 배열에 추가:
-
-```ts
-{
-  id: 'github-pr',
-  label: 'Create GitHub PR',
-  category: 'task',  // messaging | task | data | schedule
-  keywords: ['github', 'pr', 'pull', 'request', 'merge'],
-  description: 'Create a pull request on GitHub',
-}
-```
-
-새 카테고리라면 `lib/knowledge.ts`의 `CATEGORY_COLOR` 맵도 함께 수정하세요.
+`src/lib/gemini.ts`의 `SYSTEM_PROMPT` 또는 `PR_ANALYSIS_SYSTEM_PROMPT` 상수를 수정합니다. 변경 결과는 PromptLog 패널(`[SYSTEM]` 섹션)에서 즉시 확인할 수 있습니다.
 
 ---
 
@@ -267,8 +265,8 @@ Slack Incoming Webhook으로 메시지를 전송하는 서버사이드 프록시
 
 | 항목 | 현재 상태 | 영향 범위 |
 |---|---|---|
-| 지식베이스 크기 | 10개 고정, 코드 내 하드코딩 | 워크플로우 커버리지 |
-| 태스크 실행 | Slack만 실제 연동, 나머지 Mock | Jira · Email 자동화 불가 |
-| 태스크 타입 | 4종류 고정 | 확장 시 다중 파일 수정 필요 |
+| diff 크기 | 최대 12,000자 truncate | 대규모 PR 분석 품질 저하 |
+| 태스크 실행 | Notion은 실제 연동, Slack은 SLACK_WEBHOOK_URL 설정 시 연동 | - |
+| 태스크 타입 | 2종류 (notion · slack) | 확장 시 다중 파일 수정 필요 |
+| Notion 연동 | 이슈 생성만 지원 | 기존 이슈 업데이트 불가 |
 | 시스템 프롬프트 | 코드 하드코딩 | 배포 없이 수정 불가 |
-| D3 파라미터 | 하드코딩 | 노드 수 증가 시 레이아웃 품질 저하 가능 |

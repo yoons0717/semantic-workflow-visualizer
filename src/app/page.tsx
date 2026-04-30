@@ -18,7 +18,7 @@ export default function DashboardPage() {
           PIPELINE v0.1.0
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <PipelineBadge variant="idle">GROQ API</PipelineBadge>
+          <PipelineBadge variant="idle">GEMINI API</PipelineBadge>
         </div>
       </header>
 

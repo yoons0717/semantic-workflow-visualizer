@@ -13,11 +13,9 @@ npm run test:watch   # watch 모드
 
 | 파일 | 대상 | 주요 케이스 |
 |---|---|---|
-| `lib/__tests__/knowledge.test.ts` | `cosineSimilarity` | 동일 벡터, 직교, 반대, 엣지케이스 |
 | `components/__tests__/StreamingPanel.test.tsx` | `renderLine` | 섹션 헤더, 번호 리스트, 불릿, 빈 줄 |
 | `store/__tests__/workflowStore.test.ts` | Zustand 액션 | 청크 누적, 전체 리셋, 에러 메시지 토글 |
-| `components/__tests__/PipelineStatus.test.tsx` | `PipelineStatus` | stage별 레이블 전환 |
-| `hooks/__tests__/useAnalyze.test.ts` | `useAnalyze` | 스트리밍 누적, stage 전환, 임베딩 반영, 에러 처리 |
+| `components/__tests__/PipelineStatus.test.tsx` | `PipelineStatus` | stage별 레이블 전환, 스텝 렌더링 |
 
 ---
 
