@@ -1,14 +1,8 @@
 import { create } from 'zustand';
-import type { PipelineStage, Token, WorkflowTask, NotionDatabase } from '@/types';
+import type { PipelineStage, WorkflowTask, NotionDatabase } from '@/types';
 
 interface WorkflowStore {
   // ── State ──────────────────────────────────────────────────────────────────
-
-  /** 사용자가 입력한 원문 텍스트. */
-  input: string;
-
-  /** 입력 텍스트를 토큰화한 결과 배열. */
-  tokens: Token[];
 
   /** 현재 파이프라인 단계. */
   stage: PipelineStage;
@@ -42,8 +36,6 @@ interface WorkflowStore {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  setInput: (input: string) => void;
-  setTokens: (tokens: Token[]) => void;
   setStage: (stage: PipelineStage) => void;
   /** SSE 청크를 기존 streamedText 뒤에 누적한다. */
   appendStreamedText: (chunk: string) => void;
@@ -62,8 +54,6 @@ interface WorkflowStore {
 }
 
 const initialState = {
-  input: '',
-  tokens: [],
   stage: 'idle' as PipelineStage,
   streamedText: '',
   tasks: [],
@@ -79,8 +69,6 @@ const initialState = {
 export const useWorkflowStore = create<WorkflowStore>((set) => ({
   ...initialState,
 
-  setInput: (input) => set({ input }),
-  setTokens: (tokens) => set({ tokens }),
   setStage: (stage) => set({ stage }),
   appendStreamedText: (chunk) =>
     set((state) => ({ streamedText: state.streamedText + chunk })),

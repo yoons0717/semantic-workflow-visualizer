@@ -25,7 +25,6 @@ describe('appendStreamedText', () => {
 describe('reset', () => {
   it('분석 중 상태에서 reset하면 모든 파생 상태가 초기화된다', () => {
     const store = useWorkflowStore.getState();
-    store.setInput('send slack message');
     store.setStage('error');
     store.appendStreamedText('partial stream');
     store.setErrorMessage('분석 중 오류가 발생했습니다');
@@ -34,7 +33,6 @@ describe('reset', () => {
     store.reset();
 
     const state = useWorkflowStore.getState();
-    expect(state.input).toBe('');
     expect(state.stage).toBe('idle');
     expect(state.streamedText).toBe('');
     expect(state.errorMessage).toBeNull();

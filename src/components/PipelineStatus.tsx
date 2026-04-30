@@ -5,15 +5,14 @@ import type { PipelineStage } from "@/types";
 
 type StepState = "done" | "active" | "dim" | "error";
 
-const STEPS = ["Input", "Tokenizing", "Semantic Analysis", "Task Extraction", "Execution"];
+const STEPS = ["PR Input", "Analysis", "Task Extraction", "Execution"];
 
 const STAGE_MAP: Record<PipelineStage, StepState[]> = {
-  idle:       ["dim",   "dim",    "dim",    "dim",  "dim"],
-  tokenizing: ["done",  "active", "dim",    "dim",  "dim"],
-  analyzing:  ["done",  "done",   "active", "dim",  "dim"],
-  executing:  ["done",  "done",   "done",   "active", "dim"],
-  done:       ["done",  "done",   "done",   "done", "done"],
-  error:      ["done",  "done",   "error",  "dim",  "dim"],
+  idle:      ["dim",   "dim",    "dim",    "dim"],
+  analyzing: ["done",  "active", "dim",    "dim"],
+  executing: ["done",  "done",   "active", "dim"],
+  done:      ["done",  "done",   "done",   "done"],
+  error:     ["done",  "error",  "dim",    "dim"],
 };
 
 const DOT_CLASSES: Record<StepState, string> = {
@@ -24,12 +23,11 @@ const DOT_CLASSES: Record<StepState, string> = {
 };
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
-  idle:       "Idle",
-  tokenizing: "Tokenizing ···",
-  analyzing:  "Analyzing ···",
-  executing:  "Executing ···",
-  done:       "Done",
-  error:      "Error",
+  idle:      "Idle",
+  analyzing: "Analyzing ···",
+  executing: "Executing ···",
+  done:      "Done",
+  error:     "Error",
 };
 
 const LABEL_CLASSES: Record<StepState, string> = {
