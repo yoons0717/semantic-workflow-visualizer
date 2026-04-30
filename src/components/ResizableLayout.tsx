@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Panel } from "@/components/Panel";
-import { TokenizerPanel } from "@/components/TokenizerPanel";
+import { GitHubPanel } from "@/components/GitHubPanel";
 import { StreamingPanel } from "@/components/StreamingPanel";
 import { PromptLog } from "@/components/PromptLog";
 import { TaskExecutor } from "@/components/TaskExecutor";
@@ -116,7 +116,7 @@ export function ResizableLayout() {
     >
       {/* COL 1, ROW 1 — Live Tokenizer */}
       <Panel title="GitHub PR" dotColor="var(--teal)" className="min-h-60">
-        <TokenizerPanel />
+        <GitHubPanel />
       </Panel>
 
       {/* VERTICAL HANDLE — col1 | col2 */}
