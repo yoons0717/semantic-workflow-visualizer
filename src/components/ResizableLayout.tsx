@@ -126,7 +126,7 @@ export function ResizableLayout() {
       <Panel
         title="AI Streaming Analysis"
         dotColor="var(--accent)"
-        badge="GROQ / llama-3.3-70b"
+        badge="Gemini 2.5 Flash"
         className="min-h-75"
       >
         <StreamingPanel />
