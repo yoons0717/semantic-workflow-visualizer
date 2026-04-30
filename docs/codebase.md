@@ -266,7 +266,7 @@ Slack Incoming Webhook으로 메시지를 전송하는 서버사이드 프록시
 | 항목 | 현재 상태 | 영향 범위 |
 |---|---|---|
 | diff 크기 | 최대 12,000자 truncate | 대규모 PR 분석 품질 저하 |
-| 태스크 실행 | Notion·Slack만 실제 연동, 나머지 Mock | Jira · Email 자동화 불가 |
-| 태스크 타입 | 5종류 (notion · slack · jira · email · generic) | 확장 시 다중 파일 수정 필요 |
+| 태스크 실행 | Notion은 실제 연동, Slack은 SLACK_WEBHOOK_URL 설정 시 연동 | - |
+| 태스크 타입 | 2종류 (notion · slack) | 확장 시 다중 파일 수정 필요 |
 | Notion 연동 | 이슈 생성만 지원 | 기존 이슈 업데이트 불가 |
 | 시스템 프롬프트 | 코드 하드코딩 | 배포 없이 수정 불가 |

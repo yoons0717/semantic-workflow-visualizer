@@ -129,7 +129,7 @@ idle → analyzing → executing → done
 | 항목 | 현재 | 비고 |
 |---|---|---|
 | diff 크기 | 최대 12,000자 | 대규모 PR은 diff가 잘림 |
-| 태스크 타입 | notion · slack · jira · email · generic | 그 외는 전부 generic으로 분류 |
+| 태스크 타입 | notion · slack | 그 외 타입은 추출되지 않음 |
 | 태스크 추출 | Gemini `json_object` mode + Zod 검증 | 스키마 불일치 시 `[]` fallback |
 | Notion 연동 | 이슈 생성만 지원 | 기존 이슈 업데이트 불가 |
 | GitHub 접근 | Public 레포 무인증, Private 레포는 GITHUB_TOKEN 필요 | - |
