@@ -48,7 +48,7 @@ src/
 ├── lib/
 │   ├── gemini.ts                     # Gemini 클라이언트, 모델명, 시스템 프롬프트
 │   ├── taskSchema.ts                 # Zod 스키마 — WorkflowTask 구조 검증
-│   ├── mockWebhook.ts                # 태스크 실행 시뮬레이터 (Notion 제외)
+│   ├── mockWebhook.ts                # 태스크 실행 — Notion 직접 연동, Slack webhook 연동
 │   └── notionSchema.ts               # Notion DB 스키마 조회·파싱 유틸
 │
 └── types/
@@ -97,7 +97,7 @@ export const PR_ANALYSIS_SYSTEM_PROMPT = `...`;  // PR diff 분석용
 
 ### `lib/mockWebhook.ts`
 
-Slack 외 태스크(Jira · Email · Generic)의 실행을 시뮬레이션합니다. Notion 태스크는 `TaskCard`에서 직접 `/api/notion/rows`를 호출합니다.
+Notion과 Slack 태스크 실행을 담당합니다. Notion은 `/api/notion/rows`를 직접 호출하고, Slack은 `SLACK_WEBHOOK_URL`이 있으면 `/api/webhook/slack`으로 실제 전송, 없으면 mock fallback입니다.
 
 ```ts
 export async function executeTask(task: WorkflowTask): Promise<{ success: boolean; message: string }>
