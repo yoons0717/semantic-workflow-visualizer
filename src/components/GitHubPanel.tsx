@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useAnalyze } from "@/hooks/useAnalyze";
+import { useFavorites } from "@/hooks/useFavorites";
 import { Spinner } from "@/components/Spinner";
 import type { PipelineStage } from "@/types";
 
@@ -34,6 +35,8 @@ export function GitHubPanel() {
   const [prsFor, setPrsFor] = useState<string>("");
   const [prsError, setPrsError] = useState<string | null>(null);
   const prsLoading = !!githubRepo && prsFor !== githubRepo && !prsError;
+
+  const { favorites, toggle, isFavorite } = useFavorites();
 
   const { analyzePR } = useAnalyze();
 
@@ -79,40 +82,70 @@ export function GitHubPanel() {
       <><Spinner /> Extracting tasks…</>
     ) : null;
 
+  const selectRepo = (repo: string) => {
+    setGithubRepo(repo);
+    setGithubPrNumber("");
+    if (repo !== githubRepo) {
+      setPrsFor("");
+      setPrsError(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2.5 h-full overflow-hidden">
+      {/* Favorites chips */}
+      {favorites.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 shrink-0">
+          {favorites.map((repo) => (
+            <button
+              key={repo}
+              onClick={() => selectRepo(repo)}
+              className={`font-mono text-[9px] tracking-[0.06em] px-2 py-0.5 rounded-xs border transition-all duration-150 ${
+                githubRepo === repo
+                  ? "border-accent text-accent bg-bg-accent-muted"
+                  : "border-border text-text-sec hover:border-accent hover:text-accent"
+              }`}
+            >
+              ★ {repo}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* GitHub PR selects */}
       <div className="rounded-[3px] px-3 py-2.5 flex flex-col gap-2.5 shrink-0 bg-bg-input border border-border">
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
           Repository
         </div>
-        <select
-          value={githubRepo}
-          onChange={(e) => {
-            const next = e.target.value;
-            setGithubRepo(next);
-            setGithubPrNumber("");
-            if (next !== githubRepo) {
-              setPrsFor("");
-              setPrsError(null);
-            }
-          }}
-          disabled={reposLoading || !!reposError}
-          className="bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
-        >
-          <option value="">
-            {reposLoading
-              ? "Loading…"
-              : reposError
-              ? "Failed to load"
-              : "Select a repository"}
-          </option>
-          {repos.map((r) => (
-            <option key={r.full_name} value={r.full_name}>
-              {r.private ? "🔒 " : ""}{r.full_name}
+        <div className="flex items-center gap-2">
+          <select
+            value={githubRepo}
+            onChange={(e) => selectRepo(e.target.value)}
+            disabled={reposLoading || !!reposError}
+            className="flex-1 bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
+          >
+            <option value="">
+              {reposLoading
+                ? "Loading…"
+                : reposError
+                ? "Failed to load"
+                : "Select a repository"}
             </option>
-          ))}
-        </select>
+            {repos.map((r) => (
+              <option key={r.full_name} value={r.full_name}>
+                {r.private ? "🔒 " : ""}{r.full_name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => toggle(githubRepo)}
+            disabled={!githubRepo}
+            title={isFavorite(githubRepo) ? "Remove from favorites" : "Add to favorites"}
+            className="text-[13px] leading-none transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:scale-110"
+          >
+            {isFavorite(githubRepo) ? "★" : "☆"}
+          </button>
+        </div>
 
         <div className="border-t border-border" />
 
