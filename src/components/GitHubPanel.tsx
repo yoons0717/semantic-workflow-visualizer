@@ -11,7 +11,11 @@ type PR = { number: number; title: string };
 
 const ANALYZABLE_STAGES: readonly PipelineStage[] = ["idle", "done", "error"];
 
-const fetchJSON = (url: string) => fetch(url).then((r) => r.json());
+const fetchJSON = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error(r.statusText);
+    return r.json();
+  });
 
 export function GitHubPanel() {
   const stage = useWorkflowStore((s) => s.stage);
@@ -22,12 +26,10 @@ export function GitHubPanel() {
   const setGithubRepo = useWorkflowStore((s) => s.setGithubRepo);
   const setGithubPrNumber = useWorkflowStore((s) => s.setGithubPrNumber);
 
-  // repos: initialize loading=true so no sync setState in effect
   const [repos, setRepos] = useState<Repo[]>([]);
   const [reposLoading, setReposLoading] = useState(true);
   const [reposError, setReposError] = useState<string | null>(null);
 
-  // prs: derive loading from prsFor vs githubRepo — avoids sync setState in effect
   const [prs, setPrs] = useState<PR[]>([]);
   const [prsFor, setPrsFor] = useState<string>("");
   const [prsError, setPrsError] = useState<string | null>(null);
@@ -36,20 +38,25 @@ export function GitHubPanel() {
   const { analyzePR } = useAnalyze();
 
   useEffect(() => {
+    let cancelled = false;
     fetchJSON("/api/github/repos")
-      .then(setRepos)
-      .catch(() => setReposError("Failed to load repos"))
-      .finally(() => setReposLoading(false));
+      .then((data) => { if (!cancelled) setRepos(data); })
+      .catch(() => { if (!cancelled) setReposError("Failed to load repos"); })
+      .finally(() => { if (!cancelled) setReposLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     if (!githubRepo) return;
+    let cancelled = false;
     fetchJSON(`/api/github/prs?repo=${encodeURIComponent(githubRepo)}`)
       .then((data: PR[]) => {
+        if (cancelled) return;
         setPrs(data);
         setPrsFor(githubRepo);
       })
-      .catch(() => setPrsError("Failed to load PRs"));
+      .catch(() => { if (!cancelled) setPrsError("Failed to load PRs"); });
+    return () => { cancelled = true; };
   }, [githubRepo]);
 
   const canAnalyzePR =
