@@ -8,17 +8,11 @@ export interface WebhookResult {
 
 const MOCK_DELAYS: Record<WorkflowTask['type'], number> = {
   slack: 600,
-  jira: 1200,
-  email: 800,
-  generic: 500,
   notion: 900,
 };
 
 const MOCK_MESSAGES: Record<WorkflowTask['type'], (payload: Record<string, string>) => string> = {
   slack: (p) => `Message sent to ${p.channel ?? '#general'}`,
-  jira: (p) => `Ticket created: ${p.project ?? 'PROJ'}-${Math.floor(Math.random() * 900) + 100}`,
-  email: (p) => `Email delivered to ${p.to ?? 'recipient'}`,
-  generic: () => 'Task executed successfully',
   notion: (p) => `Created in Notion: ${p.title ?? 'Untitled'}`,
 };
 
@@ -72,10 +66,5 @@ async function executeNotionTask(payload: Record<string, string>): Promise<Webho
 
 export async function executeTask(task: WorkflowTask): Promise<WebhookResult> {
   if (task.type === 'slack') return executeSlackTask(task.payload);
-  if (task.type === 'notion') return executeNotionTask(task.payload);
-  await delay(MOCK_DELAYS[task.type]);
-  return {
-    success: true,
-    message: MOCK_MESSAGES[task.type](task.payload),
-  };
+  return executeNotionTask(task.payload);
 }

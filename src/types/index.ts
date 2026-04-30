@@ -1,6 +1,6 @@
 export type PipelineStage = 'idle' | 'analyzing' | 'executing' | 'done' | 'error';
 
-export type TaskType = 'slack' | 'jira' | 'email' | 'generic' | 'notion';
+export type TaskType = 'slack' | 'notion';
 
 export interface WorkflowTask {
   id: string;
