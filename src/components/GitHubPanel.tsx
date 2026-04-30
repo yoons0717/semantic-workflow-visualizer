@@ -1,11 +1,17 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Spinner } from "@/components/Spinner";
 import type { PipelineStage } from "@/types";
+
+const FavoriteChips = dynamic(
+  () => import("@/components/FavoriteChips").then((m) => m.FavoriteChips),
+  { ssr: false },
+);
 
 type Repo = { full_name: string; private: boolean };
 type PR = { number: number; title: string };
@@ -36,7 +42,7 @@ export function GitHubPanel() {
   const [prsError, setPrsError] = useState<string | null>(null);
   const prsLoading = !!githubRepo && prsFor !== githubRepo && !prsError;
 
-  const { favorites, toggle, isFavorite } = useFavorites();
+  const { toggle, isFavorite } = useFavorites();
 
   const { analyzePR } = useAnalyze();
 
@@ -92,25 +98,9 @@ export function GitHubPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-2.5 h-full overflow-hidden">
-      {/* Favorites chips */}
-      {favorites.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 shrink-0">
-          {favorites.map((repo) => (
-            <button
-              key={repo}
-              onClick={() => selectRepo(repo)}
-              className={`font-mono text-[9px] tracking-[0.06em] px-2 py-0.5 rounded-xs border transition-all duration-150 ${
-                githubRepo === repo
-                  ? "border-accent text-accent bg-bg-accent-muted"
-                  : "border-border text-text-sec hover:border-accent hover:text-accent"
-              }`}
-            >
-              ★ {repo}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex flex-col gap-2.5 h-full overflow-y-auto">
+      {/* Favorites chips — ssr:false로 하이드레이션 불일치 방지 */}
+      <FavoriteChips selectedRepo={githubRepo} onSelect={selectRepo} />
 
       {/* GitHub PR selects */}
       <div className="rounded-[3px] px-3 py-2.5 flex flex-col gap-2.5 shrink-0 bg-bg-input border border-border">

@@ -42,20 +42,33 @@ export function PipelineStatus() {
   const stepStates = STAGE_MAP[stage];
 
   return (
-    <div className="h-9.5 flex items-center px-5 shrink-0 bg-bg-panel border-b border-border-dim">
-      {STEPS.map((step, i) => (
-        <div key={step} className="flex items-center gap-2 px-4 relative">
-          {i < STEPS.length - 1 && (
-            <div className="absolute -right-px top-1/2 -translate-y-1/2 w-4.5 h-px bg-border" />
-          )}
-          <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${DOT_CLASSES[stepStates[i]]}`} />
-          <span className={`font-mono text-[10px] tracking-[0.08em] uppercase transition-colors duration-300 ${LABEL_CLASSES[stepStates[i]]}`}>
-            {step}
-          </span>
+    <div className="h-9.5 flex items-center px-4 md:px-5 shrink-0 bg-bg-panel border-b border-border-dim">
+      {/* Mobile: 도트 4개 + 현재 스테이지 텍스트 */}
+      <div className="flex md:hidden items-center gap-2">
+        {stepStates.map((state, i) => (
+          <div key={i} className={`w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300 ${DOT_CLASSES[state]}`} />
+        ))}
+        <span className="ml-1 font-mono text-[10px] tracking-[0.08em] uppercase text-text-sec">
+          {STAGE_LABELS[stage]}
+        </span>
+      </div>
+
+      {/* Desktop: 전체 스텝 레이블 */}
+      <div className="hidden md:flex items-center flex-1">
+        {STEPS.map((step, i) => (
+          <div key={step} className="flex items-center gap-2 px-4 relative">
+            {i < STEPS.length - 1 && (
+              <div className="absolute -right-px top-1/2 -translate-y-1/2 w-4.5 h-px bg-border" />
+            )}
+            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${DOT_CLASSES[stepStates[i]]}`} />
+            <span className={`font-mono text-[10px] tracking-[0.08em] uppercase transition-colors duration-300 ${LABEL_CLASSES[stepStates[i]]}`}>
+              {step}
+            </span>
+          </div>
+        ))}
+        <div className="ml-auto font-mono text-[10px] text-text-sec">
+          {STAGE_LABELS[stage]}
         </div>
-      ))}
-      <div className="ml-auto font-mono text-[10px] text-text-sec">
-        {STAGE_LABELS[stage]}
       </div>
     </div>
   );
