@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { useAnalyze } from "@/hooks/useAnalyze";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBanner } from "@/components/ErrorBanner";
 
@@ -67,24 +66,8 @@ export function renderLine(line: string, i: number) {
 export function StreamingPanel() {
   const stage = useWorkflowStore((s) => s.stage);
   const streamedText = useWorkflowStore((s) => s.streamedText);
-  const { analyze } = useAnalyze();
 
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // stage가 'tokenizing'으로 바뀌면 분석 요청 실행.
-  // input은 getState()로 읽어 의존성 배열에서 제외.
-  useEffect(() => {
-    if (stage !== "tokenizing") return;
-
-    const { input, setStage } = useWorkflowStore.getState();
-
-    if (!input.trim()) {
-      setStage("idle");
-      return;
-    }
-
-    analyze(input);
-  }, [stage, analyze]);
 
   // 스트리밍 중 자동 스크롤
   useEffect(() => {

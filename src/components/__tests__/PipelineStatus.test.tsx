@@ -30,11 +30,10 @@ describe('PipelineStatus', () => {
     expect(screen.getByText('Error')).toBeInTheDocument();
   });
 
-  it('5개 스텝 레이블을 모두 렌더링한다', () => {
+  it('4개 스텝 레이블을 모두 렌더링한다', () => {
     render(<PipelineStatus />);
-    expect(screen.getByText('Input')).toBeInTheDocument();
-    expect(screen.getByText('Tokenizing')).toBeInTheDocument();
-    expect(screen.getByText('Semantic Analysis')).toBeInTheDocument();
+    expect(screen.getByText('PR Input')).toBeInTheDocument();
+    expect(screen.getByText('Analysis')).toBeInTheDocument();
     expect(screen.getByText('Task Extraction')).toBeInTheDocument();
     expect(screen.getByText('Execution')).toBeInTheDocument();
   });

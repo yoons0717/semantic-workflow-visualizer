@@ -52,34 +52,6 @@ export function useAnalyze() {
   const setPromptLog = useWorkflowStore((s) => s.setPromptLog);
   const setTasks = useWorkflowStore((s) => s.setTasks);
   const setErrorMessage = useWorkflowStore((s) => s.setErrorMessage);
-  const analyze = useCallback(
-    async (input: string) => {
-      clearStreamedText();
-      setTasks([]);
-      setStage("analyzing");
-
-      try {
-        await streamAnalysis(input, appendStreamedText, setPromptLog);
-      } catch {
-        setErrorMessage("분석 중 오류가 발생했습니다");
-        setStage("error");
-        return;
-      }
-
-      setStage("executing");
-      const analysisText = useWorkflowStore.getState().streamedText;
-      try {
-        const tasks = await extractTasks(analysisText);
-        setTasks(tasks);
-        if (tasks.length === 0) setStage("done");
-      } catch {
-        setErrorMessage("태스크 추출 중 오류가 발생했습니다");
-        setStage("error");
-      }
-    },
-    [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setErrorMessage],
-  );
-
   const analyzePR = useCallback(
     async (repo: string, prNumber: string) => {
       clearStreamedText();
@@ -123,5 +95,5 @@ export function useAnalyze() {
     [setStage, appendStreamedText, clearStreamedText, setPromptLog, setTasks, setErrorMessage],
   );
 
-  return { analyze, analyzePR };
+  return { analyzePR };
 }
