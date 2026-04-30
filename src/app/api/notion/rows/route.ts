@@ -76,6 +76,9 @@ export async function POST(req: Request) {
     return Response.json({ url: 'url' in page ? page.url : null });
   } catch (err) {
     console.error('[/api/notion/rows]', err);
+    if (err instanceof z.ZodError) {
+      return Response.json({ error: 'Invalid request body' }, { status: 400 });
+    }
     return Response.json({ error: 'Failed to create row' }, { status: 500 });
   }
 }

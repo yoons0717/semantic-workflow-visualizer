@@ -12,7 +12,7 @@ interface TaskCardProps {
 
 const TYPE_COLORS: Record<WorkflowTask["type"], string> = {
   slack:  "text-swv-teal border-swv-teal/25",
-  notion: "text-[#e06c75] border-[#e06c75]/25",
+  notion: "text-swv-notion border-swv-notion/25",
 };
 
 const STATUS_CONFIG: Record<
@@ -55,7 +55,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
           }));
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error('[TaskCard] DB schema fetch failed:', err));
   }, [selectedDbId]);
 
   const isTerminal = ["rejected", "running", "success", "failed"].includes(task.status);
@@ -101,7 +101,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
           value={localDescription}
           onChange={(e) => setLocalDescription(e.target.value)}
           rows={3}
-          className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 text-[10px] text-text-sec leading-normal resize-none focus:outline-none focus:border-[#e06c75]"
+          className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 text-[10px] text-text-sec leading-normal resize-none focus:outline-none focus:border-swv-notion"
         />
       ) : (
         <div className="text-[10px] text-text-sec leading-normal line-clamp-2">
@@ -118,7 +118,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
           <select
             value={selectedDbId}
             onChange={(e) => setSelectedDbId(e.target.value)}
-            className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] appearance-none"
+            className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-swv-notion appearance-none"
           >
             <option value="">— select database —</option>
             {notionDatabases.map((db) => (
@@ -142,7 +142,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
                 value={statusOptions.includes(value) ? value : ''}
                 onChange={(e) => handlePayloadChange(key, e.target.value)}
                 disabled={isTerminal || statusOptions.length === 0}
-                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] disabled:opacity-50 disabled:cursor-default appearance-none"
+                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-swv-notion disabled:opacity-50 disabled:cursor-default appearance-none"
               >
                 {statusOptions.length === 0
                   ? <option value="">— select DB first —</option>
@@ -154,7 +154,7 @@ export function TaskCard({ task, onApprove, onReject }: TaskCardProps) {
                 value={priorityOptions.includes(value) ? value : ''}
                 onChange={(e) => handlePayloadChange(key, e.target.value)}
                 disabled={isTerminal || priorityOptions.length === 0}
-                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-[#e06c75] disabled:opacity-50 disabled:cursor-default appearance-none"
+                className="w-full bg-bg-panel border border-border-dim rounded-xs px-1.5 py-0.75 font-mono text-[10px] text-text-pri focus:outline-none focus:border-swv-notion disabled:opacity-50 disabled:cursor-default appearance-none"
               >
                 {priorityOptions.length === 0
                   ? <option value="">— select DB first —</option>

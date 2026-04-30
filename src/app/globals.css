@@ -18,6 +18,7 @@
   --blue:       #4080f0;
   --teal:       #4faee8;
   --purple:     #8855ff;
+  --notion:     #e06c75;
 
   /* stage button muted backgrounds */
   --bg-accent-muted:     #0d2a1e;
@@ -49,6 +50,7 @@
   --color-swv-blue:   var(--blue);
   --color-swv-teal:   var(--teal);
   --color-swv-purple: var(--purple);
+  --color-swv-notion: var(--notion);
 
   /* font utilities */
   --font-sans:      var(--font-barlow), sans-serif;

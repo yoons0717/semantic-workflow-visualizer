@@ -24,7 +24,7 @@ export function TaskExecutor() {
       fetch("/api/notion/databases")
         .then((r) => r.json())
         .then((data) => { if (Array.isArray(data)) setNotionDatabases(data); })
-        .catch(() => {});
+        .catch((err) => console.error('[TaskExecutor] Notion databases fetch failed:', err));
     }
   }, [tasks, notionDatabases.length, setNotionDatabases]);
 

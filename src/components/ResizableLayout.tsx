@@ -42,7 +42,7 @@ function DragHandle({
   const isCol = direction === "col";
   return (
     <div
-      className={`hidden md:flex items-center justify-center bg-border-dim hover:bg-[#1a1a1a] ${isCol ? "cursor-col-resize" : "cursor-row-resize"} group transition-colors duration-150 select-none`}
+      className={`hidden md:flex items-center justify-center bg-border-dim hover:bg-bg-raised ${isCol ? "cursor-col-resize" : "cursor-row-resize"} group transition-colors duration-150 select-none`}
       onPointerDown={onPointerDown}
       style={style}
     >
