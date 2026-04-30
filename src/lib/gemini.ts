@@ -1,8 +1,8 @@
-import { createGroq } from '@ai-sdk/groq';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-export const groqProvider = createGroq({ apiKey: process.env.GROQ_API_KEY });
+export const geminiProvider = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export const GROQ_MODEL = 'llama-3.3-70b-versatile';
+export const GEMINI_MODEL = (process.env.GEMINI_MODEL as string | undefined) ?? 'gemini-2.5-flash-lite';
 
 export const SYSTEM_PROMPT = `You are an AI assistant that analyzes user text.
 Identify and analyze the following from the input, then output in English:
