@@ -115,7 +115,7 @@ export function ResizableLayout() {
       }}
     >
       {/* COL 1, ROW 1 — Live Tokenizer */}
-      <Panel title="GitHub PR" dotColor="var(--teal)" className="min-h-60">
+      <Panel title="GitHub PR" dotColor="var(--teal)" className="min-h-72 md:min-h-60">
         <GitHubPanel />
       </Panel>
 
