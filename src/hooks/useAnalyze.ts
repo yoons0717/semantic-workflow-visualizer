@@ -4,6 +4,12 @@ import { useCallback } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowTask } from "@/types";
 
+interface GitHubPRResponse {
+  title: string;
+  body: string | null;
+  diff: string;
+}
+
 // LLM 분석 결과를 스트리밍으로 수신, 청크마다 onChunk 호출
 async function streamAnalysis(
   input: string,
@@ -63,10 +69,10 @@ export function useAnalyze() {
           `/api/github/pr?repo=${encodeURIComponent(repo)}&pr=${encodeURIComponent(prNumber)}`,
         );
         if (!prRes.ok) throw new Error(`GitHub API error: ${prRes.status}`);
-        const data = await prRes.json();
-        const title = data.title as string;
-        const body = (data.body as string) ?? '';
-        const diff = data.diff as string;
+        const data = await prRes.json() as GitHubPRResponse;
+        const title = data.title;
+        const body = data.body ?? '';
+        const diff = data.diff;
         const input = `PR: ${title}${body ? `\n\nDescription:\n${body}` : ''}\n\nDiff:\n${diff}`;
 
         await streamAnalysis(input, appendStreamedText, setPromptLog, 'pr');

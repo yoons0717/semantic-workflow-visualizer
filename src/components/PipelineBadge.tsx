@@ -1,3 +1,5 @@
+"use client";
+
 interface PipelineBadgeProps {
   variant: "idle" | "active" | "warn";
   children: React.ReactNode;

@@ -1,3 +1,5 @@
+"use client";
+
 interface PanelProps {
   title: string;
   dotColor: string;

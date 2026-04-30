@@ -1,3 +1,5 @@
+"use client";
+
 interface SpinnerProps {
   size?: "sm" | "md";
 }
