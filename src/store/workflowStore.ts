@@ -28,12 +28,6 @@ interface WorkflowStore {
   /** GitHub PR 번호. GitHub PR 분석에서 사용. */
   githubPrNumber: string;
 
-  /** PR 분석 모드에서 notion 태스크 자동 승인 대상 DB ID. */
-  notionTargetDatabaseId: string | null;
-
-  /** true일 때 TaskExecutor가 notion 태스크를 자동 승인한다. */
-  autoApproveNotion: boolean;
-
   // ── Actions ────────────────────────────────────────────────────────────────
 
   setStage: (stage: PipelineStage) => void;
@@ -47,8 +41,6 @@ interface WorkflowStore {
   setNotionDatabases: (dbs: NotionDatabase[]) => void;
   setGithubRepo: (repo: string) => void;
   setGithubPrNumber: (pr: string) => void;
-  setNotionTargetDatabaseId: (id: string | null) => void;
-  setAutoApproveNotion: (value: boolean) => void;
   /** 모든 상태를 초기값으로 되돌린다. 새 입력 시작 시 호출. */
   reset: () => void;
 }
@@ -62,8 +54,6 @@ const initialState = {
   notionDatabases: [] as NotionDatabase[],
   githubRepo: '',
   githubPrNumber: '',
-  notionTargetDatabaseId: null as string | null,
-  autoApproveNotion: false,
 };
 
 export const useWorkflowStore = create<WorkflowStore>((set) => ({
@@ -79,7 +69,5 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
   setNotionDatabases: (dbs) => set({ notionDatabases: dbs }),
   setGithubRepo: (repo) => set({ githubRepo: repo }),
   setGithubPrNumber: (pr) => set({ githubPrNumber: pr }),
-  setNotionTargetDatabaseId: (id) => set({ notionTargetDatabaseId: id }),
-  setAutoApproveNotion: (value) => set({ autoApproveNotion: value }),
   reset: () => set(initialState),
 }));

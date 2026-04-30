@@ -28,9 +28,6 @@
   --border-amber-muted:  #3a2a0a;
   --border-blue-muted:   #1a2a40;
 
-  /* token chip colors (5-cycle) */
-  --tok-1: #1e3a5a; --tok-2: #1a3d2e; --tok-3: #3a2a1a; --tok-4: #2a1a3a; --tok-5: #1a2a3a;
-  --tok-t1: #4faee8; --tok-t2: #40d47a; --tok-t3: #f5a040; --tok-t4: #b060f0; --tok-t5: #40c0f0;
 }
 
 @theme inline {
@@ -92,17 +89,4 @@ html, body {
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
-}
-@keyframes token-appear {
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* token chip color utilities (5-cycle) */
-@utility tok-chip-0 { background: var(--tok-1); color: var(--tok-t1); }
-@utility tok-chip-1 { background: var(--tok-2); color: var(--tok-t2); }
-@utility tok-chip-2 { background: var(--tok-3); color: var(--tok-t3); }
-@utility tok-chip-3 { background: var(--tok-4); color: var(--tok-t4); }
-@utility tok-chip-4 { background: var(--tok-5); color: var(--tok-t5); }
-@keyframes card-appear {
-  to { opacity: 1; transform: translateX(0); }
 }
