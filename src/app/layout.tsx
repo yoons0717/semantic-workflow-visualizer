@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SWV — Semantic Workflow Visualizer",
+  title: "ReviewMate",
   description: "LLM 동작 원리 시각화 및 업무 자동화 엔지니어링 대시보드",
 };
 
