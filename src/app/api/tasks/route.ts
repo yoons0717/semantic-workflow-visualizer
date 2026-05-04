@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     });
 
     const tasks = object.tasks.map((t, i) => ({
-      id: `task-${i + 1}`,
+      id: crypto.randomUUID(),
       title: t.title,
       description: t.description,
       type: 'notion' as const,
