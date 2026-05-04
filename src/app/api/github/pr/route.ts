@@ -39,10 +39,12 @@ export async function GET(req: Request) {
 
     const [prData, filesData] = await Promise.all([prRes.json(), filesRes.json()]);
 
-    const diff = (filesData as Array<{ filename: string; patch?: string }>)
+    const full = (filesData as Array<{ filename: string; patch?: string }>)
       .map((f) => `--- ${f.filename}\n${f.patch ?? '(binary)'}`)
-      .join('\n\n')
-      .slice(0, MAX_DIFF_CHARS);
+      .join('\n\n');
+    const diff = full.length > MAX_DIFF_CHARS
+      ? full.slice(0, full.lastIndexOf('\n', MAX_DIFF_CHARS))
+      : full;
 
     return Response.json({
       title: prData.title as string,
