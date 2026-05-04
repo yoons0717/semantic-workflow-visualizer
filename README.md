@@ -1,8 +1,8 @@
-# Semantic Workflow Visualizer
+# ReviewMate
 
 GitHub PR을 분석해 코드 이슈를 추출하고, Notion 이슈로 자동 생성하는 개발 생산성 도구.
 
-**Live Demo →** https://semantic-workflow-visualizer.vercel.app
+**Live Demo →** https://reviewmate.vercel.app
 
 ---
 
@@ -38,8 +38,8 @@ GitHub PR을 선택하면 세 단계가 순서대로 실행됨:
 - [Google AI Studio API 키](https://aistudio.google.com/apikey)
 
 ```bash
-git clone https://github.com/yoons0717/semantic-workflow-visualizer.git
-cd semantic-workflow-visualizer
+git clone https://github.com/yoons0717/ReviewMate.git
+cd ReviewMate
 npm install
 ```
 

@@ -1,4 +1,4 @@
-# Code Conventions — Semantic Workflow Visualizer
+# Code Conventions — ReviewMate
 
 ## 1. 파일 & 디렉토리
 
