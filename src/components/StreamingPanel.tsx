@@ -5,10 +5,34 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBanner } from "@/components/ErrorBanner";
 
+function renderInline(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/);
+  if (parts.length === 1) return text;
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^\*\*[^*]+\*\*$/.test(part)
+          ? <strong key={i} className="font-semibold text-text-pri">{part.slice(2, -2)}</strong>
+          : part
+      )}
+    </>
+  );
+}
+
 export function renderLine(line: string, i: number) {
   const trimmed = line.trim();
 
-  // **텍스트** 또는 **텍스트:** → 섹션 헤더
+  // ## / ### 헤딩
+  const headingMatch = trimmed.match(/^#{1,3}\s+(.+)/);
+  if (headingMatch) {
+    return (
+      <p key={i} className="font-mono text-[11px] font-semibold text-accent mt-4 mb-1 first:mt-0">
+        {headingMatch[1]}
+      </p>
+    );
+  }
+
+  // **전체 줄** → 섹션 헤더
   if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
     return (
       <p key={i} className="font-mono text-[11px] font-semibold text-accent mt-4 mb-1 first:mt-0">
@@ -17,7 +41,19 @@ export function renderLine(line: string, i: number) {
     );
   }
 
-  // 1. 2. 3. → 번호 리스트
+  // **Label**: description (bold 레이블 + 설명)
+  const boldLabelMatch = trimmed.match(/^\*\*(.+?)\*\*:?\s+(.*)/);
+  if (boldLabelMatch) {
+    const [, label, rest] = boldLabelMatch;
+    return (
+      <p key={i} className="text-[12px] leading-[1.6]">
+        <span className="font-semibold text-text-pri">{label}</span>
+        {rest && <span className="text-text-sec">: {renderInline(rest)}</span>}
+      </p>
+    );
+  }
+
+  // 1. **bold**: rest → 번호 리스트
   const listMatch = trimmed.match(/^(\d+)\.\s+\*\*(.+?)\*\*:?\s*(.*)/);
   if (listMatch) {
     const [, num, bold, rest] = listMatch;
@@ -25,7 +61,7 @@ export function renderLine(line: string, i: number) {
       <p key={i} className="ml-3 text-[12px] leading-[1.6]">
         <span className="text-text-dim font-mono text-[10px]">{num}.</span>{" "}
         <span className="font-semibold text-text-pri">{bold}</span>
-        {rest && <span className="text-text-sec">: {rest}</span>}
+        {rest && <span className="text-text-sec">: {renderInline(rest)}</span>}
       </p>
     );
   }
@@ -37,7 +73,7 @@ export function renderLine(line: string, i: number) {
     return (
       <p key={i} className="ml-3 text-[12px] leading-[1.6] text-text-sec">
         <span className="text-text-dim font-mono text-[10px]">{num}.</span>{" "}
-        {content}
+        {renderInline(content)}
       </p>
     );
   }
@@ -47,7 +83,7 @@ export function renderLine(line: string, i: number) {
     return (
       <p key={i} className="ml-3 text-[12px] leading-[1.6] text-text-sec">
         <span className="text-text-dim mr-1">·</span>
-        {trimmed.slice(2)}
+        {renderInline(trimmed.slice(2))}
       </p>
     );
   }
@@ -58,7 +94,7 @@ export function renderLine(line: string, i: number) {
   // 일반 텍스트
   return (
     <p key={i} className="text-[12px] leading-[1.6] text-text-sec">
-      {line}
+      {renderInline(line)}
     </p>
   );
 }

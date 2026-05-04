@@ -20,6 +20,34 @@ describe('renderLine', () => {
     });
   });
 
+  describe('마크다운 헤딩 (## / ###)', () => {
+    it('## 헤딩을 # 마커 없이 헤더로 렌더링한다', () => {
+      render(renderLine('## Intent Analysis', 0));
+      expect(screen.getByText('Intent Analysis')).toBeInTheDocument();
+      expect(screen.queryByText(/^##/)).not.toBeInTheDocument();
+    });
+
+    it('### 헤딩도 동일하게 처리한다', () => {
+      render(renderLine('### [Issue 1] Null Pointer', 0));
+      expect(screen.getByText('[Issue 1] Null Pointer')).toBeInTheDocument();
+      expect(screen.queryByText(/^###/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('bold 레이블 + 설명 (**Label**: desc)', () => {
+    it('**Label**: description 형식을 분리해 렌더링한다', () => {
+      render(renderLine('**Impact**: Application will crash', 0));
+      expect(screen.getByText('Impact')).toBeInTheDocument();
+      expect(screen.getByText(/Application will crash/)).toBeInTheDocument();
+    });
+
+    it('콜론 없는 **Label** desc 형식도 처리한다', () => {
+      render(renderLine('**Severity** High priority issue', 0));
+      expect(screen.getByText('Severity')).toBeInTheDocument();
+      expect(screen.getByText(/High priority issue/)).toBeInTheDocument();
+    });
+  });
+
   describe('번호 리스트 (1. **bold**: rest)', () => {
     it('번호, bold 항목명, 설명을 분리해 렌더링한다', () => {
       render(renderLine('1. **Authentication**: Authenticate with the API', 0));
@@ -54,6 +82,27 @@ describe('renderLine', () => {
     it('불릿 마커(·)를 표시한다', () => {
       render(renderLine('- Some item', 0));
       expect(screen.getByText('·')).toBeInTheDocument();
+    });
+
+    it('불릿 내 inline bold를 렌더링한다', () => {
+      render(renderLine('- **Critical**: must fix immediately', 0));
+      expect(screen.getByText('Critical')).toBeInTheDocument();
+      expect(screen.getByText(/must fix immediately/)).toBeInTheDocument();
+    });
+  });
+
+  describe('inline bold (**word** 줄 중간)', () => {
+    it('줄 중간 **bold** 마커를 제거하고 strong 태그로 렌더링한다', () => {
+      render(renderLine('The **user** object is accessed without null check', 0));
+      expect(screen.getByText('user')).toBeInTheDocument();
+      expect(screen.queryByText(/\*\*/)).not.toBeInTheDocument();
+    });
+
+    it('여러 inline bold를 모두 처리한다', () => {
+      render(renderLine('Both **title** and **body** fields are required', 0));
+      expect(screen.getByText('title')).toBeInTheDocument();
+      expect(screen.getByText('body')).toBeInTheDocument();
+      expect(screen.queryByText(/\*\*/)).not.toBeInTheDocument();
     });
   });
 
