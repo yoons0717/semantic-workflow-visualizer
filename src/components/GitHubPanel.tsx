@@ -164,16 +164,23 @@ export function GitHubPanel() {
           Pull Request
         </div>
         {reposError || prsError ? (
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            placeholder="PR 번호 (예: 42)"
-            value={githubPrNumber}
-            onChange={(e) => setGithubPrNumber(e.target.value.replace(/\D/g, ""))}
-            disabled={!githubRepo}
-            className="bg-transparent outline-none text-[13px] leading-normal text-text-pri placeholder:text-text-dim/50 disabled:opacity-30"
-          />
+          <>
+            {prsError && !reposError && (
+              <p className="text-[11px] text-text-dim leading-relaxed">
+                PR 목록을 불러오지 못했어요. 번호를 직접 입력하세요.
+              </p>
+            )}
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="PR 번호 (예: 42)"
+              value={githubPrNumber}
+              onChange={(e) => setGithubPrNumber(e.target.value.replace(/\D/g, ""))}
+              disabled={!githubRepo}
+              className="bg-transparent outline-none text-[13px] leading-normal text-text-pri placeholder:text-text-dim/50 disabled:opacity-30"
+            />
+          </>
         ) : (
           <select
             value={githubPrNumber}
