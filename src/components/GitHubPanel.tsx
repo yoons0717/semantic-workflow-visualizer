@@ -185,7 +185,7 @@ export function GitHubPanel() {
           <select
             value={githubPrNumber}
             onChange={(e) => setGithubPrNumber(e.target.value)}
-            disabled={!githubRepo || prsLoading || !!prsError}
+            disabled={!githubRepo || prsLoading}
             className="bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
           >
             <option value="">
