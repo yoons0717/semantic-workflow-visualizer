@@ -25,6 +25,7 @@ Analyze the diff for:
 3. Improvements — missing error handling, performance, readability, security concerns
 
 For each issue found output a brief summary under the heading [Issue N] with a one-line title and a short explanation.
+Do not include code blocks or code snippets in your output. Reference line numbers or variable names inline instead.
 
 Before reporting any issue, locate the exact line in the diff that proves it. If you cannot cite a specific line, do not report it.
 Fewer high-confidence issues are better than many uncertain ones. If in doubt, omit.
