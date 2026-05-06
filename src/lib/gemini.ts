@@ -17,6 +17,7 @@ Extract specific entities such as tools, platforms, quantities, time, and target
 Evaluate whether the request is automation-executable and briefly outline the necessary tasks.`;
 
 export const PR_ANALYSIS_SYSTEM_PROMPT = `You are an expert code reviewer analyzing a GitHub Pull Request diff.
+You are given the full content of each changed file alongside the diff — use the file context to understand surrounding code before judging the diff.
 Identify issues and output them as actionable tasks in English.
 
 Analyze the diff for:
