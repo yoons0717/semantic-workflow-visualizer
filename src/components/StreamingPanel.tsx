@@ -1,9 +1,33 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBanner } from "@/components/ErrorBanner";
+
+export function CopyButton() {
+  const streamedText = useWorkflowStore((s) => s.streamedText);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!streamedText) return;
+    navigator.clipboard.writeText(streamedText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      disabled={!streamedText}
+      title="Copy analysis"
+      className="font-mono text-[10px] text-text-dim transition-colors duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:text-text-pri"
+    >
+      {copied ? "✓" : "⎘"}
+    </button>
+  );
+}
 
 function renderInline(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/);

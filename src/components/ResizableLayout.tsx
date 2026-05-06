@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Panel } from "@/components/Panel";
 import { GitHubPanel } from "@/components/GitHubPanel";
-import { StreamingPanel } from "@/components/StreamingPanel";
+import { StreamingPanel, CopyButton } from "@/components/StreamingPanel";
 import { PromptLog } from "@/components/PromptLog";
 import { TaskExecutor } from "@/components/TaskExecutor";
 import { NotionBrowser } from "@/components/NotionBrowser";
@@ -127,6 +127,7 @@ export function ResizableLayout() {
         title="AI Streaming Analysis"
         dotColor="var(--accent)"
         badge="Gemini 2.5 Flash"
+        actions={<CopyButton />}
         className="min-h-75"
       >
         <StreamingPanel />
