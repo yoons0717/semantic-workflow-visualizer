@@ -26,4 +26,6 @@ Analyze the diff for:
 
 For each issue found output a brief summary under the heading [Issue N] with a one-line title and a short explanation.
 
-Only report issues clearly present in the diff. If the code looks correct, say so briefly and report no issues.`;
+Before reporting any issue, locate the exact line in the diff that proves it. If you cannot cite a specific line, do not report it.
+Fewer high-confidence issues are better than many uncertain ones. If in doubt, omit.
+If the code looks correct, say so briefly and report no issues.`;
