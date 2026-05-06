@@ -1,5 +1,13 @@
-// GET /api/github/pr?repo=owner/repo&pr=123 — GitHub PR 제목·본문·diff 반환 (최대 12,000자 truncate)
+// GET /api/github/pr?repo=owner/repo&pr=123 — GitHub PR 제목·본문·diff·파일 원본 반환
 const MAX_DIFF_CHARS = 12000;
+const MAX_FILE_CONTENT_CHARS = 5000;
+const MAX_FILES_WITH_CONTENT = 5;
+
+interface PRFile {
+  filename: string;
+  patch?: string;
+  status: string;
+}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -39,18 +47,41 @@ export async function GET(req: Request) {
 
     const [prData, filesData] = await Promise.all([prRes.json(), filesRes.json()]);
 
-    const full = (filesData as Array<{ filename: string; patch?: string }>)
+    const full = (filesData as PRFile[])
       .map((f) => `--- ${f.filename}\n${f.patch ?? '(binary)'}`)
       .join('\n\n');
     const diff = full.length > MAX_DIFF_CHARS
       ? full.slice(0, full.lastIndexOf('\n', MAX_DIFF_CHARS))
       : full;
 
+    const headSha = (prData as { head: { sha: string } }).head.sha;
+    const filesToFetch = (filesData as PRFile[])
+      .filter((f) => f.patch && f.status !== 'removed')
+      .slice(0, MAX_FILES_WITH_CONTENT);
+
+    const fileContents = await Promise.all(
+      filesToFetch.map(async (f) => {
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repoName}/contents/${f.filename}?ref=${headSha}`,
+          { headers },
+        );
+        if (!res.ok) return { filename: f.filename, content: '' };
+        const data = await res.json() as { content?: string };
+        if (!data.content) return { filename: f.filename, content: '' };
+        const decoded = Buffer.from(data.content, 'base64').toString('utf-8');
+        const content = decoded.length > MAX_FILE_CONTENT_CHARS
+          ? decoded.slice(0, MAX_FILE_CONTENT_CHARS) + '\n... (truncated)'
+          : decoded;
+        return { filename: f.filename, content };
+      }),
+    );
+
     return Response.json({
       title: prData.title as string,
       body: (prData.body as string | null) ?? '',
-      filesChanged: (filesData as Array<{ filename: string }>).map((f) => f.filename),
+      filesChanged: (filesData as PRFile[]).map((f) => f.filename),
       diff,
+      fileContents,
     });
   } catch (err) {
     console.error('[/api/github/pr]', err);

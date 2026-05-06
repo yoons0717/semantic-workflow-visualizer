@@ -8,6 +8,7 @@ interface GitHubPRResponse {
   title: string;
   body: string | null;
   diff: string;
+  fileContents: Array<{ filename: string; content: string }>;
 }
 
 // LLM 분석 결과를 스트리밍으로 수신, 청크마다 onChunk 호출
@@ -70,10 +71,20 @@ export function useAnalyze() {
         );
         if (!prRes.ok) throw new Error(`GitHub API error: ${prRes.status}`);
         const data = await prRes.json() as GitHubPRResponse;
-        const title = data.title;
+        const { title, diff, fileContents } = data;
         const body = data.body ?? '';
-        const diff = data.diff;
-        const input = `PR: ${title}${body ? `\n\nDescription:\n${body}` : ''}\n\nDiff:\n${diff}`;
+
+        const fileContext = fileContents
+          .filter((f) => f.content)
+          .map((f) => `### ${f.filename}\n\`\`\`\n${f.content}\n\`\`\``)
+          .join('\n\n');
+
+        const input = [
+          `PR: ${title}`,
+          body ? `\n\nDescription:\n${body}` : '',
+          fileContext ? `\n\n## Full File Context\n${fileContext}` : '',
+          `\n\n## Diff\n${diff}`,
+        ].join('');
 
         await streamAnalysis(input, appendStreamedText, setPromptLog, 'pr');
       } catch {
