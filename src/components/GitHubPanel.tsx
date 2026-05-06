@@ -107,64 +107,103 @@ export function GitHubPanel() {
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
           Repository
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={githubRepo}
-            onChange={(e) => selectRepo(e.target.value)}
-            disabled={reposLoading || !!reposError}
-            className="flex-1 bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
-          >
-            <option value="">
-              {reposLoading
-                ? "Loading…"
-                : reposError
-                ? "Failed to load"
-                : "Select a repository"}
-            </option>
-            {repos.map((r) => (
-              <option key={r.full_name} value={r.full_name}>
-                {r.private ? "🔒 " : ""}{r.full_name}
+        {reposError ? (
+          <>
+            <p className="text-[11px] text-text-dim leading-relaxed">
+              GitHub 연동 없이 퍼블릭 레포를 직접 입력할 수 있어요.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="owner/repo (예: facebook/react)"
+                value={githubRepo}
+                onChange={(e) => selectRepo(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-[13px] leading-normal text-text-pri placeholder:text-text-dim/50"
+              />
+              <button
+                onClick={() => toggle(githubRepo)}
+                disabled={!githubRepo}
+                title={isFavorite(githubRepo) ? "Remove from favorites" : "Add to favorites"}
+                className="text-[13px] leading-none transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:scale-110"
+              >
+                {isFavorite(githubRepo) ? "★" : "☆"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <select
+              value={githubRepo}
+              onChange={(e) => selectRepo(e.target.value)}
+              disabled={reposLoading}
+              className="flex-1 bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
+            >
+              <option value="">
+                {reposLoading ? "Loading…" : "Select a repository"}
               </option>
-            ))}
-          </select>
-          <button
-            onClick={() => toggle(githubRepo)}
-            disabled={!githubRepo}
-            title={isFavorite(githubRepo) ? "Remove from favorites" : "Add to favorites"}
-            className="text-[13px] leading-none transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:scale-110"
-          >
-            {isFavorite(githubRepo) ? "★" : "☆"}
-          </button>
-        </div>
+              {repos.map((r) => (
+                <option key={r.full_name} value={r.full_name}>
+                  {r.private ? "🔒 " : ""}{r.full_name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => toggle(githubRepo)}
+              disabled={!githubRepo}
+              title={isFavorite(githubRepo) ? "Remove from favorites" : "Add to favorites"}
+              className="text-[13px] leading-none transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:scale-110"
+            >
+              {isFavorite(githubRepo) ? "★" : "☆"}
+            </button>
+          </div>
+        )}
 
         <div className="border-t border-border" />
 
         <div className="font-mono text-[9px] tracking-[0.1em] uppercase text-text-dim">
           Pull Request
         </div>
-        <select
-          value={githubPrNumber}
-          onChange={(e) => setGithubPrNumber(e.target.value)}
-          disabled={!githubRepo || prsLoading || !!prsError}
-          className="bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
-        >
-          <option value="">
-            {!githubRepo
-              ? "Select a repository first"
-              : prsLoading
-              ? "Loading…"
-              : prsError
-              ? "Failed to load"
-              : prs.length === 0
-              ? "No open PRs"
-              : "Select a PR"}
-          </option>
-          {prs.map((pr) => (
-            <option key={pr.number} value={String(pr.number)}>
-              #{pr.number} — {pr.title}
+        {reposError || prsError ? (
+          <>
+            {prsError && !reposError && (
+              <p className="text-[11px] text-text-dim leading-relaxed">
+                PR 목록을 불러오지 못했어요. 번호를 직접 입력하세요.
+              </p>
+            )}
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="PR 번호 (예: 42)"
+              value={githubPrNumber}
+              onChange={(e) => setGithubPrNumber(e.target.value.replace(/\D/g, ""))}
+              disabled={!githubRepo}
+              className="bg-transparent outline-none text-[13px] leading-normal text-text-pri placeholder:text-text-dim/50 disabled:opacity-30"
+            />
+          </>
+        ) : (
+          <select
+            value={githubPrNumber}
+            onChange={(e) => setGithubPrNumber(e.target.value)}
+            disabled={!githubRepo || prsLoading}
+            className="bg-transparent outline-none text-[13px] leading-normal text-text-pri disabled:opacity-30"
+          >
+            <option value="">
+              {!githubRepo
+                ? "Select a repository first"
+                : prsLoading
+                ? "Loading…"
+                : prs.length === 0
+                ? "No open PRs"
+                : "Select a PR"}
             </option>
-          ))}
-        </select>
+            {prs.map((pr) => (
+              <option key={pr.number} value={String(pr.number)}>
+                #{pr.number} — {pr.title}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Action buttons */}
