@@ -22,7 +22,7 @@ export function CopyButton() {
       onClick={handleCopy}
       disabled={!streamedText}
       title="Copy analysis"
-      className="font-mono text-[10px] text-text-dim transition-colors duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:text-text-pri"
+      className="font-mono text-[14px] leading-none text-text-dim transition-colors duration-150 disabled:opacity-20 disabled:cursor-not-allowed hover:text-text-pri"
     >
       {copied ? "✓" : "⎘"}
     </button>
